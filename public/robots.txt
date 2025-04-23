@@ -1,3 +1,3 @@
 User-agent:*
 Disallow:
-Sitemap: https://bc8d8dfa-de3a-43e3-bed5-0b756a2b3872.localhost.3160/sitemap.xml
+Sitemap: https://dbdf6bd3-90fc-4421-9c6b-c1681585151b.localhost.3160/sitemap.xml

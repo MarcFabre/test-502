@@ -42,8 +42,15 @@ export default {
         const componentContent = inject('componentContent');
         const componentStyle = inject('componentStyle');
         const componentConfiguration = inject('componentConfiguration');
+        const componentWwProps = inject('componentWwProps');
+        const componentContext = {
+            content: componentContent,
+            wwProps: componentWwProps,
+        };
 
-        return computed(() => getLayoutStyleFromContent(componentContent, componentStyle, componentConfiguration));
+        return computed(() =>
+            getLayoutStyleFromContent(componentContent, componentStyle, componentConfiguration, componentContext)
+        );
     },
 
     /**
@@ -69,6 +76,8 @@ export default {
      */
     useLink({ isDisabled, forcedLinkRef } = {}) {
         const componentState = inject('componentState', {});
+        const wwProps = inject('componentWwProps', {});
+
         const addInternalState = inject('wwAddInternalState', () => {});
         const removeInternalState = inject('wwRemoveInternalState', () => {});
         const sectionId = inject('sectionId');
@@ -78,7 +87,11 @@ export default {
         /* wwFront:end */
 
         const normalizedLink = computed(() => {
-            const rawLink = forcedLinkRef ? forcedLinkRef.value : componentState.link;
+            const rawLink = forcedLinkRef
+                ? forcedLinkRef.value
+                : wwProps.value.wwLink
+                ? wwProps.value.wwLink
+                : componentState.link;
 
             if (!rawLink || rawLink.type === 'none') {
                 return { type: 'none' };
@@ -159,8 +172,7 @@ export default {
                     link.href = rawLink.href;
 
                     if (typeof link.href !== 'string') {
-                        wwLib.wwLog.error('Link href is not a string', link.href);
-                        break;
+                        link.href = '';
                     }
 
                     /* wwFront:start */
@@ -332,6 +344,7 @@ export default {
                         //QUERY
                         if (normalizedLink.value.query && normalizedLink.value.query.length) {
                             const query = normalizedLink.value.query
+                                ?.filter(query => !!query)
                                 .map(({ name, value }) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
                                 .join('&');
                             properties.href = `${properties.href}${

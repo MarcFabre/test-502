@@ -43,10 +43,12 @@ import { useHead } from '@vueuse/head';
 export default {
     components: {
         wwPageLoadProgress,
+ 
     },
     setup() {
         const store = useStore();
         const page = computed(() => store.getters['websiteData/getPage'] || { id: null, meta: {} });
+
         const designInfo = computed(() => store.getters['websiteData/getDesignInfo'] || {});
 
         /* wwFront:start */
@@ -73,6 +75,13 @@ export default {
             }),
             /* wwFront:end */
  
+            /* wwFront:start */
+            brandingOptions: {
+                href: 'https://go.weweb.io/preview',
+                target: '_blank',
+                style: 'position: fixed; bottom: 4px; right: 4px; background: rgb(38, 38, 38); color: white; padding: 10px 12px; font-size: 14px; border: 1px solid rgb(97, 97, 97); border-radius: 4px; cursor: pointer; font-weight: 500;',
+            },
+            /* wwFront:end */
         };
     },
     computed: {
@@ -107,9 +116,36 @@ export default {
  
         this.setTheme();
         this.setBackground();
+        /* wwFront:start */
+
+        /* wwFront:end */
     },
  
     methods: {
+        /* wwFront:start */
+        checkBranding() {
+            const frontDocument = wwLib.getFrontDocument();
+            const allElem = frontDocument.querySelectorAll('a');
+            for (const elem of allElem) {
+                if (elem.innerHTML === 'Made with WeWeb') {
+                    const hasSameStyle = elem.getAttribute('style') === this.brandingOptions.style;
+                    const hasSameHref = elem.getAttribute('href') === this.brandingOptions.href;
+                    const hasSameTarget = elem.getAttribute('target') === this.brandingOptions.target;
+                    if (hasSameStyle && hasSameHref && hasSameTarget) {
+                        return;
+                    }
+                }
+            }
+            this.addBranding();
+        },
+        addBranding() {
+            const frontDocument = wwLib.getFrontDocument();
+            const elem = frontDocument.createElement('a');
+            elem.innerHTML = 'Made with WeWeb';
+            Object.keys(this.brandingOptions).forEach(key => elem.setAttribute(key, this.brandingOptions[key]));
+            frontDocument.body.appendChild(elem);
+        },
+        /* wwFront:end */
         setTheme() {
             if (this.theme === 'dark') {
                 wwLib.getFrontDocument().documentElement.classList.add('ww-app-theme-dark');
@@ -165,4 +201,5 @@ html {
     opacity: 0;
     transform: scale(0.95);
 }
+ 
 </style>

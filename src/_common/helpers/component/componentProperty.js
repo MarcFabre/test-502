@@ -1,6 +1,5 @@
 import { computed, unref } from 'vue';
-import get from 'lodash.get';
- 
+import { get } from 'lodash';
 
 const allScreenMedia = computed(() => getAllScreenMedia());
 const currentActiveScreens = computed(() => {

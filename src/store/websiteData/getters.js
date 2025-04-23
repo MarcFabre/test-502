@@ -77,6 +77,9 @@ export default {
     getWwObjects(state) {
         return state.wwObjects;
     },
+    getWwObjectContext(state) {
+        return state.wwObjectContext;
+    },
     /*=============================================m_ÔÔ_m=============================================\
       SECTIONS
     \================================================================================================*/

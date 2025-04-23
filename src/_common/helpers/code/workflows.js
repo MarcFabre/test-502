@@ -2,7 +2,7 @@ import { executeCode, getValue } from '@/_common/helpers/code/customCode.js';
 import { executeComponentAction } from '@/_common/use/useActions.js';
 import { detectInfinityLoop } from '@/_common/helpers/code/workflowsCallstack.js';
 import { getComponentLabel } from '@/_common/helpers/component/component.js';
-import set from 'lodash.set';
+import { set } from 'lodash';
 import { unref } from 'vue';
 import { useVariablesStore } from '@/pinia/variables.js';
 
@@ -201,7 +201,16 @@ export async function executeWorkflowActions(
 export async function executeWorkflowAction(
     workflow,
     actionId,
-    { context = {}, event = {}, callstack = [], isError, standalone = true, executionContext, internal }
+    {
+        context = {},
+        event = {},
+        callstack = [],
+        isError,
+        standalone = true,
+        executionContext,
+        internal,
+        fromFunction = false,
+    }
 ) {
     let result, stop, breakLoop;
     if (!workflow || !actionId) return { result };
@@ -219,6 +228,7 @@ export async function executeWorkflowAction(
     if (!action) return { result };
 
     function logActionInformation(type, log, meta = {}) {
+        if (fromFunction) return;
         wwLib.logStore.log(type, log, {
             workflowContext: { workflow, actionId: action.id, executionContext },
             type: 'action',
@@ -226,14 +236,16 @@ export async function executeWorkflowAction(
         });
     }
 
+    if (!fromFunction) {
  
 
-    if (!standalone && action.disabled) {
+        if (!standalone && action.disabled) {
  
-        return { result };
+            return { result };
+        }
+
+ 
     }
-
- 
 
     const wwUtils = {
         log: logActionInformation,
@@ -253,14 +265,20 @@ export async function executeWorkflowAction(
                 const path = action.usePath ? getValue(action.path || '', context, { event, recursive: false }) : null;
                 const index = getValue(action.index || 0, context, { event, recursive: false });
 
-                if (action.internal) {
+                const variablesStore = useVariablesStore(wwLib.$pinia);
+                const innerVariables =
+                    wwLib.$store.getters['libraries/getComponents'][context?.component?.baseUid]?.inner?.variables ||
+                    {};
+                const innerComponentVariables = context?.component?.componentVariablesConfiguration || {};
+
+                if (innerVariables[action.varId] || innerComponentVariables[action.varId]) {
                     result = context?.component?.methods?.updateVariable(action.varId, value, {
                         path,
                         index,
                         arrayUpdateType: action.arrayUpdateType,
                         workflowContext: { workflow, actionId: action.id, executionContext },
                     });
-                } else {
+                } else if (variablesStore.getConfiguration(action.varId)) {
                     result = wwLib.wwVariable.updateValue(action.varId, value, {
                         path,
                         index,
@@ -522,10 +540,19 @@ export async function executeWorkflowAction(
                         ? context?.component?.componentVariablesConfiguration?.[`${fileVariable.componentUid}-progress`]
                         : variablesStore.components[`${fileVariable.componentUid}-progress`]
                     : null;
+
+                const statusVariable = isVariable
+                    ? isInternalVariable
+                        ? context?.component?.componentVariablesConfiguration?.[`${fileVariable.componentUid}-status`]
+                        : variablesStore.components[`${fileVariable.componentUid}-status`]
+                    : null;
+
                 const element = isVariable
                     ? wwLib.$store.getters['websiteData/getWwObjects'][fileVariable.componentUid] || {}
                     : null;
-                const isMultiple = isVariable ? element?.content?.default?.multiple : Array.isArray(actionValue);
+                const isMultiple = isVariable
+                    ? element?.content?.default?.multiple || statusVariable
+                    : Array.isArray(actionValue);
 
                 const updateProgressVariable = progress => {
                     if (!progressVariable) return;
@@ -536,29 +563,91 @@ export async function executeWorkflowAction(
                     }
                 };
 
+                const markAllFilesCompleted = () => {
+                    if (!statusVariable) return;
+
+                    const currentStatus = isInternalVariable
+                        ? context?.component?.variables[`${fileVariable.componentUid}-status`] || {}
+                        : variablesStore.values[statusVariable.id] || {};
+
+                    const updatedStatus = { ...currentStatus };
+                    for (const file of files) {
+                        if (file && file.name) {
+                            updatedStatus[file.name] = {
+                                uploadProgress: 100,
+                                isUploading: false,
+                                isUploaded: true,
+                            };
+                        }
+                    }
+
+                    if (isInternalVariable) {
+                        context?.component?.methods?.updateVariable(
+                            `${fileVariable.componentUid}-status`,
+                            updatedStatus
+                        );
+                    } else {
+                        variablesStore.setValue(statusVariable.id, updatedStatus);
+                    }
+                };
+
                 let progress = 0;
                 result = [];
 
                 const designId = wwLib.$store.getters['websiteData/getDesignInfo'].id;
                 const files = isMultiple ? actionValue : [actionValue];
+
                 for (const file of files) {
-                    if (!file) continue;
+                    if (!file || !file.name) continue;
+
                     const { data } = await axios.post(
                         `${wwLib.wwApiRequests._getApiUrl()}/designs/${designId}/user-files`,
                         {
                             name: file.name.replace(/[#!@$%^&*()+=\[\]{};':"\\|,<>\? \/]/g, '_'), // Replace problematic characters with underscores
-                            type: file.type,
+                            type: file.type || file.mimeType,
                             size: file.size,
                             tag: `${getValue(action.fileTag, context, { event, recursive: false }) || ''}`,
                         }
                     );
+
+                    const handleFileProgress = data => {
+                        const fileProgress = (data.loaded / data.total) * 100;
+                        const overallProgress = progress + fileProgress / files.length;
+
+                        updateProgressVariable(overallProgress);
+
+                        if (statusVariable) {
+                            const fileId = file.name;
+                            const currentStatus = isInternalVariable
+                                ? context?.component?.variables[`${fileVariable.componentUid}-status`] || {}
+                                : variablesStore.values[statusVariable.id] || {};
+
+                            const updatedStatus = {
+                                ...currentStatus,
+                                [fileId]: {
+                                    uploadProgress: fileProgress,
+                                    isUploading: fileProgress < 100,
+                                    isUploaded: fileProgress >= 100,
+                                },
+                            };
+
+                            if (isInternalVariable) {
+                                context?.component?.methods?.updateVariable(
+                                    `${fileVariable.componentUid}-status`,
+                                    updatedStatus
+                                );
+                            } else {
+                                variablesStore.setValue(statusVariable.id, updatedStatus);
+                            }
+                        }
+                    };
+
                     await axios.put(data.signedRequest, file, {
-                        headers: { Accept: '*/*', 'Content-Type': file.type },
+                        headers: { Accept: '*/*', 'Content-Type': file.type || file.mimeType },
                         skipAuthorization: true,
-                        onUploadProgress: data => {
-                            updateProgressVariable(progress + ((data.loaded / data.total) * 100) / files.length);
-                        },
+                        onUploadProgress: handleFileProgress,
                     });
+
  
                     result.push({ url: data.url, name: data.name, ext: data.ext, tag: data.tag, size: data.size });
                     progress += 100 / files.length;
@@ -566,6 +655,9 @@ export async function executeWorkflowAction(
                 if (!isMultiple) result = result[0];
 
                 updateProgressVariable(100);
+                markAllFilesCompleted();
+
+                logActionInformation('info', 'File upload completed', { preview: result });
                 break;
             }
             case 'execute-workflow': {
@@ -629,7 +721,14 @@ export async function executeWorkflowAction(
                     `${action.actionName} triggered on ${getComponentLabel(action.type, action.uid)}`
                 );
 
-                result = executeComponentAction(action, { context }, argsValues);
+                result = executeComponentAction(
+                    {
+                        ...action,
+                        repeatIndex: context?.item?.repeatIndex || null,
+                    },
+                    { context },
+                    argsValues
+                );
 
                 break;
             }
@@ -680,8 +779,9 @@ export async function executeWorkflowAction(
                 break;
             }
             case 'wait': {
-                if (action.value === undefined) throw new Error('No time delay defined.');
-                const delay = getValue(action.value, context, { event });
+                if (action.value === undefined && action.duration === undefined)
+                    throw new Error('No time delay defined.');
+                const delay = getValue(action.value || action.duration, context, { event });
                 logActionInformation('info', `Waiting ${delay}ms ⏳`);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 logActionInformation('info', '⌛ Stop waiting');
@@ -927,13 +1027,23 @@ export async function executeWorkflowAction(
                 // Create a URL for the Blob object
                 const blobUrl = URL.createObjectURL(blob);
 
-                // Create a link element for downloading the file
-                const downloadLink = wwLib.getFrontDocument().createElement('a');
-                downloadLink.href = blobUrl;
-                downloadLink.download = getValue(action.fileName, context, { event }) || ''; // Set the desired file name
+                // Sanitize and validate the file name
+                let fileName = getValue(action.fileName, context, { event }) || '';
+                fileName = fileName.replace(/[^\w\s.-]/gi, '');
 
-                // Simulate a click on the link to trigger the download
-                downloadLink.click();
+                if (blobUrl.startsWith('blob:')) {
+                    // Create a link element for downloading the file
+                    const downloadLink = wwLib.getFrontDocument().createElement('a');
+
+                    // Set the download attributes with sanitized values
+                    downloadLink.href = blobUrl;
+                    downloadLink.download = fileName;
+
+                    // Simulate a click on the link to trigger the download
+                    downloadLink.click();
+                } else {
+                    throw new Error('Invalid blob URL');
+                }
 
                 // Clean up by revoking the Blob URL
                 URL.revokeObjectURL(blobUrl);
@@ -990,56 +1100,237 @@ export async function executeWorkflowAction(
             }
         }
 
-        if (internal) {
-            set(context.component, `workflowsResults.${workflow.id}.${actionId}.result`, result);
-            set(context.component, `workflowsResults.${workflow.id}.${actionId}.error`, null);
-        } else {
-            wwLib.$store.dispatch('data/setWorkflowActionResult', {
-                workflowId: workflow.id,
-                actionId,
-                result,
-                error: null,
-            });
-        }
+        if (!fromFunction) {
+            if (internal) {
+                set(context.component, `workflowsResults.${workflow.id}.${actionId}.result`, result);
+                set(context.component, `workflowsResults.${workflow.id}.${actionId}.error`, null);
+            } else {
+                wwLib.$store.dispatch('data/setWorkflowActionResult', {
+                    workflowId: workflow.id,
+                    actionId,
+                    result,
+                    error: null,
+                });
+            }
 
  
 
-        if (!metaActionTypes.includes(action.type)) {
-            switch (action.type) {
-                case 'file-encode-base64':
-                    logActionInformation('info', 'Succeeded 🎉', { preview: truncateString(result, 20) });
-                    break;
-                default:
-                    logActionInformation('info', 'Succeeded 🎉', { preview: result });
+            if (!metaActionTypes.includes(action.type)) {
+                switch (action.type) {
+                    case 'file-encode-base64':
+                        logActionInformation('info', 'Succeeded 🎉', { preview: truncateString(result, 20) });
+                        break;
+                    default:
+                        logActionInformation('info', 'Succeeded 🎉', { preview: result });
+                }
             }
         }
     } catch (err) {
         const error = convertErrorToObject(err);
-        if (internal) {
-            set(context.component, `workflowsResults.${workflow.id}.${actionId}.error`, error);
-            set(context.component, `workflowsResults.${workflow.id}.${actionId}.result`, result);
-        } else {
-            wwLib.$store.dispatch('data/setWorkflowActionResult', {
-                workflowId: workflow.id,
-                actionId,
-                error,
-                result,
-            });
-        }
+
+        if (!fromFunction) {
+            if (internal) {
+                set(context.component, `workflowsResults.${workflow.id}.${actionId}.error`, error);
+                set(context.component, `workflowsResults.${workflow.id}.${actionId}.result`, result);
+            } else {
+                wwLib.$store.dispatch('data/setWorkflowActionResult', {
+                    workflowId: workflow.id,
+                    actionId,
+                    error,
+                    result,
+                });
+            }
 
  
-        if (err) {
-            wwLib.logStore.error('An error happened during the execution of the workflow', {
-                type: 'action',
-                error: err,
-                workflowContext: { workflow, executionContext },
-            });
+            if (err) {
+                wwLib.logStore.error('An error happened during the execution of the workflow', {
+                    type: 'action',
+                    error: err,
+                    workflowContext: { workflow, executionContext },
+                });
+            }
         }
         throw err;
     }
 
     return { result, stop, breakLoop };
 }
+
+export async function executeWorkflowActionAsFunction(type, params = {}) {
+    const workflow = {
+        id: 'wf_id',
+        firstActionId: 'action_id',
+        trigger: null,
+        actions: {
+            action_id: {
+                id: 'action_id',
+                type,
+                next: null,
+                ...params,
+            },
+        },
+    };
+    const { result } = await executeWorkflowAction(workflow, 'action_id', { fromFunction: true });
+    return result;
+}
+
+export const workflowFunctions = {
+    //Variables
+    /* Params: 
+        - varIds: Array of variable ids to reset
+    */
+    resetVariablesValues: async varIds => {
+        return await executeWorkflowActionAsFunction('reset-variables', { varIds });
+    },
+
+    //Collections
+    /* Params: 
+        - collectionId: string, Id of the collection to fetch
+    */
+    fetchCollection: async collectionId => {
+        return await executeWorkflowActionAsFunction('fetch-collection', { collectionId });
+    },
+    /* Params:
+        - collectionIds: Array of collection ids to fetch
+    */
+    fetchCollectionsInParallel: async collectionsId => {
+        return await executeWorkflowActionAsFunction('fetch-collections', { collectionsId });
+    },
+
+    //Page
+    /* Params:
+        - navigateMode: 'internal' or 'external'
+        - mode: 'page' | 'path' (only for internal navigation)
+        - pageId: string, Id of the page to navigate to (only for internal navigation and mode = 'page')
+        - path: string, Path of the page to navigate to (only for internal navigation and mode = 'path')
+        - externalUrl: string, External URL to navigate to (only for external navigation)
+        - section: string, Id of the section to navigate to (only for internal navigation)
+        - openInNewTab: boolean, Open the page in a new tab
+        - queries: array of queries to pass to the page: `[{"name": "queryName", "value": "queryValue"}]` (only for internal navigation)
+        - loadProgress: boolean, Show the loading progress bar (only for internal navigation)
+        - loadProgressColor: string, Color of the loading progress bar (only for internal navigation)
+    */
+    goToPage: async (
+        navigateMode,
+        { mode, pageId, path, externalUrl, section, openInNewTab, queries, loadProgress, loadProgressColor }
+    ) => {
+        return await executeWorkflowActionAsFunction('change-page', {
+            navigateMode,
+            mode,
+            pageId,
+            path,
+            externalUrl,
+            section,
+            openInNewTab,
+            queries,
+            loadProgress,
+            loadProgressColor,
+        });
+    },
+    /* Params:
+        - pageId: string, Id of the default page to return to if no previous page in the navigation
+    */
+    goToPreviousPage: async pageId => {
+        return await executeWorkflowActionAsFunction('previous-page', { pageId });
+    },
+    /* Params:
+        - show: boolean, Show or hide the loading progress bar
+        - color: string, Color of the loading progress bar
+    */
+    setPageLoader: async (show, color) => {
+        return await executeWorkflowActionAsFunction('page-loader', { show, color });
+    },
+    /* Params:
+        - theme: 'light' | 'dark'
+    */
+    setTheme: async theme => {
+        return await executeWorkflowActionAsFunction('change-theme', { theme });
+    },
+    /* Params:
+        - lang: string, Language to change to. Must be 2 chars long.
+    */
+    setLang: async lang => {
+        return await executeWorkflowActionAsFunction('change-lang', { lang });
+    },
+
+    //Files
+    /* Params: none */
+    printPdf: async () => {
+        return await executeWorkflowActionAsFunction('print-pdf');
+    },
+    /* Params:
+        - fileString: string, Base64 string of the file to create a URL from
+    */
+    createUrlFromBase64: async fileString => {
+        return await executeWorkflowActionAsFunction('file-create-url', { fileString });
+    },
+    /* Params:
+        - file: string, uid of the element that contains the file to encode
+        - output: 'base64' | 'dataUrl'
+    */
+    encodeFileBase64: async (file, output) => {
+        return await executeWorkflowActionAsFunction('file-encode-base64', { file, output });
+    },
+    /* Params:
+        - fileUrl: string, URL of the file to download
+        - fileName: string, Name of the file to download
+    */
+    downloadFileFromUrl: async (fileUrl, fileName) => {
+        return await executeWorkflowActionAsFunction('file-download-url', { fileUrl, fileName });
+    },
+    /* Params:
+        - varId: string, uid of the element that contains the file to upload
+        - fileTag: string, Tag that will be added to the file in WeWeb
+    */
+    uploadFileToWeWeb: async (varId, fileTag) => {
+        return await executeWorkflowActionAsFunction('upload-file', { varId, fileTag });
+    },
+
+    //Workflows and Elements
+    /* Params:
+        - ...args: List of args of the function
+
+       Use workflowId as key to call the function
+       Example: executeGlobalFunction[workflowId](arg1, arg2, ...)
+    */
+    executeGlobalFunction: new Proxy(
+        {},
+        {
+            get(_target, workflowId) {
+                return async (...args) => {
+                    const globalWorkflow = wwLib.$store.getters['data/getGlobalWorkflows'][workflowId];
+                    if (!globalWorkflow) throw new Error(`Workflow "${workflowId}" not found.`);
+                    const globalWorkflowParameters = globalWorkflow.parameters || [];
+                    const parameters = {};
+                    for (const i in args) {
+                        if (globalWorkflow.parameters[i]?.name) {
+                            parameters[globalWorkflow.parameters[i].name] = args[i];
+                        }
+                    }
+                    return await executeWorkflowActionAsFunction('execute-workflow', { workflowId, parameters });
+                };
+            },
+        }
+    ),
+    /* Params:
+        - uid: string, uid of the element
+        - actionName: string, name of the action to execute
+        - args: array, Arguments to pass to the element action: `[true, "example"]`
+    */
+    executeElementAction: async (uid, actionName, args) => {
+        return await executeWorkflowActionAsFunction('component-action', { uid, actionName, args });
+    },
+
+    //Plugins
+    /* Params:
+        - pluginId: string, uid of the plugin
+        - functionName: string, name of the function to execute
+        - args: array, Arguments to pass to the function: `{"param1": "value1", "param2": "value2"}`
+    */
+    executePluginFunction: async (pluginId, functionName, args) => {
+        return await executeWorkflowActionAsFunction(`${pluginId}-${functionName}`, { args });
+    },
+};
 
 function convertErrorToObject(err) {
     const keys = ['name', ...Object.getOwnPropertyNames(err)];

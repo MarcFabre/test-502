@@ -1,4 +1,4 @@
-import get from 'lodash.get';
+import { get } from 'lodash';
 import { computed, reactive, inject, provide, watch, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
 import { getComponentConfiguration } from '@/_common/helpers/component/component.js';
@@ -15,6 +15,7 @@ export function useComponentData({
     currentStates,
     context = {},
     libraryComponentDataRef,
+    wwProps = {},
  
 }) {
     let content = {};
@@ -148,6 +149,7 @@ export function useComponentData({
         provide('componentRawContent', rawContent);
         provide('componentConfiguration', configuration);
         provide('componentData', component);
+        provide('componentWwProps', wwProps);
     }
 
     return {
@@ -202,7 +204,6 @@ export function useComponentTriggerEvent(
 
         // Launch all workflows in parallel
         workflows.forEach(workflow => {
- 
             executeWorkflow(workflow, {
                 context,
                 event,
@@ -331,7 +332,6 @@ export function useLibraryComponentWorkflow({ baseUid, componentIdentifier }, co
         ).filter(({ trigger, triggerProperty }) => trigger === name && (!property || property === triggerProperty));
         // Launch all workflows in parallel
         workflows.forEach(workflow => {
- 
             executeWorkflow(workflow, {
                 context,
                 event,

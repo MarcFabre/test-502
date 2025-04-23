@@ -1,29 +1,9 @@
 {
     "2bd1c688-31c5-443e-ae25-59aa5b6431fb": {
-        "id": "73f9a1cc-dcfc-4e9e-9b16-d6fe22304843",
+        "id": "ed1f650c-718f-4a30-bf05-fae6db81699c",
         "name": "REST API",
-        "designId": "bc8d8dfa-de3a-43e3-bed5-0b756a2b3872",
+        "designId": "dbdf6bd3-90fc-4421-9c6b-c1681585151b",
         "pluginId": "2bd1c688-31c5-443e-ae25-59aa5b6431fb",
         "publicData": {}
-    },
-    "6a64802c-52f8-4637-9932-580bf178aaa7": {
-        "id": "4f017b26-4934-404a-b1e4-3b6c7d3b3240",
-        "name": "WeWeb Auth",
-        "designId": "bc8d8dfa-de3a-43e3-bed5-0b756a2b3872",
-        "pluginId": "6a64802c-52f8-4637-9932-580bf178aaa7",
-        "publicData": {
-            "clientId": "7enms1bgt2n3olvfi627b9lf69",
-            "userPoolId": "us-east-1_9Mnzt6qe7",
-            "invitationEmail": {
-                "EmailMessage": "Hi,<br/><br/>You have been invited to join the <b>test_auth_front</b> application.<br/>Please login with your email <b>{username}</b> using the password below:<br/><b>{####}</b><br/><br/>Best.",
-                "EmailSubject": "Invitation to join test_auth_front application"
-            },
-            "verificationEmail": {
-                "EmailMessage": "Hi,<br/><br/>Here is your verification code <b>{####}</b> to change your password on the <b>test_auth_front</b> application.<br/><br/>Best.<br/>",
-                "EmailSubject": "Your verification code for test_auth_front application",
-                "DefaultEmailOption": "CONFIRM_WITH_CODE"
-            },
-            "afterNotSignInPageId": "a6f4dd08-bde7-45df-a7a5-261148686c6d"
-        }
     }
 }

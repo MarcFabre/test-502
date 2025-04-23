@@ -19,13 +19,15 @@
         @add-state="addInternalState"
         @remove-state="removeInternalState"
         @toggle-state="toggleInternalState"
+    >
+        <slot></slot
     ></component>
     <!-- wwFront:end -->
  
 </template>
 
 <script>
-import { computed, ref, toRef, reactive, inject, provide, shallowRef, watch } from 'vue';
+import { computed, ref, toRef, reactive, inject, provide, shallowRef, watch, onUnmounted } from 'vue';
 
 import {
     getComponentVueComponentName,
@@ -137,6 +139,7 @@ export default {
             uid: props.uid,
             componentId: id,
             currentStates,
+            wwProps: toRef(props, 'wwProps'),
             context,
             libraryComponentDataRef: computed(() => props.libraryComponentData),
  
@@ -202,7 +205,7 @@ export default {
  
 
         useComponentActions(
-            { uid: props.uid, componentId: id, type: 'element' },
+            { uid: props.uid, componentId: id, type: 'element', repeatIndex: bindingContext?.index },
             { context, configuration, componentRef: component }
         );
 
@@ -248,6 +251,8 @@ export default {
         // TODO if we are not recalculate this too often? even if it is static
         // The function is call in different places in the setup functions
         const config = getComponentConfiguration('element', props.uid);
+
+ 
 
         return {
             component,
@@ -350,7 +355,10 @@ export default {
             wwObjectStyle.alignSelf = this.isFlexboxChild && this.style.align ? this.style.align : 'unset';
 
             //DISPLAY
-            wwObjectStyle.display = getDisplayValue(this.style.display, this.configuration);
+            wwObjectStyle.display = getDisplayValue(this.style.display, this.configuration, {
+                content: this.content,
+                wwProps: this.wwProps,
+            });
 
             // POSITION
             if (['absolute', 'fixed', 'sticky'].includes(this.style.position)) {

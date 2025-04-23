@@ -178,7 +178,7 @@ export default {
  
 
         useLibraryComponentActions(
-            { uid: props.uid, componentId: id },
+            { uid: props.uid, componentId: id, repeatIndex: bindingContext?.index },
             { context, executionContext: libraryComponentContext }
         );
 

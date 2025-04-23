@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid, validate as isValidUUID } from 'uuid';
 import { getValue } from '@/_common/helpers/code/customCode.js';
 
 export default {
@@ -7,7 +7,6 @@ export default {
      * @DEPRECATED wwLib.wwUtils.getUid
      */
     getUniqueId() {
- 
         wwLib.wwLog.warn('wwLib.wwUtils.getUniqueId is deprecated, use wwLib.wwLib.getUid instead');
         var d = new Date();
         return Math.floor((d.getTime() * Math.random() + Math.random() * 10000 + Math.random() * 100) / 100);
@@ -18,6 +17,13 @@ export default {
      */
     getUid() {
         return uuid();
+    },
+
+    /**
+     * @PUBLIC_API
+     */
+    isValidUuid(string) {
+        return isValidUUID(string);
     },
 
     /**
@@ -195,7 +201,6 @@ export default {
      * @DEPRECATED wwLib.wwApp.addScriptToHead
      */
     addScriptToHead(options, allowMultipleAdd = false) {
- 
         wwLib.wwLog.warn('wwUtils.addScriptToHead is deprecated, use wwLib.wwApp.addScriptToHead instead');
         const attributes = {
             ...(options.async ? { async: options.async } : {}),
@@ -212,7 +217,6 @@ export default {
      * @DEPRECATED wwLib.wwApp.scrollIntoView
      */
     scrollIntoView(element, offset = 0) {
- 
         wwLib.wwLog.warn('wwUtils.scrollIntoView is deprecated, use wwLib.wwApp.scrollIntoView instead');
         wwLib.wwApp.scrollIntoView(element, { offset, behavior: 'smooth' });
     },
@@ -290,5 +294,16 @@ export default {
     sanitize(id) {
         if (!id || typeof id !== 'string') return '';
         return id.toLowerCase().replace(/\s/g, '_');
+    },
+
+    getComponentType(uid) {
+        if (wwLib.$store.getters['websiteData/getWwObjects'][uid]?.wwObjectBaseId) {
+            return 'element';
+        } else if (wwLib.$store.getters['websiteData/getWwObjects'][uid]?.libraryComponentBaseId) {
+            return 'libraryComponent';
+        } else if (wwLib.$store.getters['websiteData/getSections'][uid]?.sectionBaseId) {
+            return 'section';
+        }
+        return null;
     },
 };

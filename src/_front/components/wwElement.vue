@@ -2,12 +2,9 @@
     <wwLibraryComponent v-if="isLibraryComponent" :key="uid" :uid="uid" v-bind="$attrs"></wwLibraryComponent>
     <template v-else>
  
-            <wwElementComponent
-                ref="elementComponent"
-                v-bind="$attrs"
-                :key="`${uid}_${parentKey}`"
-                :uid="uid"
-            ></wwElementComponent>
+            <wwElementComponent ref="elementComponent" v-bind="$attrs" :key="`${uid}_${parentKey}`" :uid="uid">
+                <slot></slot>
+            </wwElementComponent>
  
     </template>
 </template>

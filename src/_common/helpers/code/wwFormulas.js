@@ -1,9 +1,13 @@
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import { escape } from 'html-escaper';
 
 function isObject(obj) {
     return !obj || Array.isArray(obj) || typeof obj !== 'object' ? false : true;
 }
+
+// RFC 5322 compliant email regex
+const EMAIL_REGEX =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 export const _wwFormulas = {
     if(cond, iftrue, iffalse) {
@@ -55,8 +59,9 @@ export const _wwFormulas = {
         return Math.round(value * multiplier) / multiplier;
     },
     length(arr) {
+        if (typeof arr === 'string') return arr.length;
         arr = wwLib.wwUtils.getDataFromCollection(arr);
-        if (!Array.isArray(arr)) throw 'First parameter must be an array (or collection)';
+        if (!Array.isArray(arr)) throw 'First parameter must be an array (or collection) or a string';
         return arr.length;
     },
     keys(obj) {
@@ -438,6 +443,10 @@ export const _wwFormulas = {
     translate(text) {
         return wwLib.wwLang.getText(text);
     },
+    isEmail(email) {
+        if (!email || typeof email !== 'string') return false;
+        return EMAIL_REGEX.test(email);
+    },
 };
 
 export const WW_FORMULAS_CATEGORIES = [
@@ -509,6 +518,7 @@ export const WW_FORMULAS_CATEGORIES = [
             { name: 'lowercase', arrity: 1 },
             { name: 'uppercase', arrity: 1 },
             { name: 'translate', arrity: 1 },
+            { name: 'isEmail', arrity: 1 },
         ],
     },
     {

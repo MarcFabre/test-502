@@ -1,11 +1,11 @@
 import emitter from 'tiny-emitter/instance';
 import services from './services/index.js';
+import { useIconsStore } from '@/pinia/icons';
 
  
 /* wwFront:start */
 // eslint-disable-next-line no-undef
 import plugin_2bd1c688_31c5_443e_ae25_59aa5b6431fb from '@/components/plugins/plugin-2bd1c688-31c5-443e-ae25-59aa5b6431fb/src/wwPlugin.js';
-import plugin_6a64802c_52f8_4637_9932_580bf178aaa7 from '@/components/plugins/plugin-6a64802c-52f8-4637-9932-580bf178aaa7/src/wwPlugin.js';
 /* wwFront:end */
 
 import { computed, reactive } from 'vue';
@@ -52,7 +52,6 @@ export default {
         /* wwFront:start */
         // eslint-disable-next-line no-undef
         wwLib.wwPluginHelper.registerPlugin('plugin-2bd1c688-31c5-443e-ae25-59aa5b6431fb', plugin_2bd1c688_31c5_443e_ae25_59aa5b6431fb);
-wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7', plugin_6a64802c_52f8_4637_9932_580bf178aaa7);
         /* wwFront:end */
 
  
@@ -256,7 +255,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwApp.goTo
      */
     goTo(...args) {
- 
         wwLib.wwLog.warn('wwLib.goTo is DEPRECATED, use wwLib.wwApp.goTo instead');
         wwLib.wwApp.goTo(...args);
     },
@@ -266,7 +264,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwUtils.getStyleFromToken
      */
     getStyleFromToken(...args) {
- 
         // wwLib.wwLog.warn('wwLib.getStyleFromToken is DEPRECATED, use wwLib.wwUtils.getStyleFromToken instead');
         return wwLib.wwUtils.getStyleFromToken(...args);
     },
@@ -276,7 +273,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwUtils.getTypoFromToken
      */
     getTypoFromToken(...args) {
- 
         // wwLib.wwLog.warn('wwLib.getTypoFromToken is DEPRECATED, use wwLib.wwUtils.getTypoFromToken instead');
         return wwLib.wwUtils.getTypoFromToken(...args);
     },
@@ -286,7 +282,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED
      */
     element(value) {
- 
         wwLib.wwLog.warn('wwLib.element is DEPRECATED');
         if (typeof value === 'object') {
             return { isWwObject: true, ...value };
@@ -300,7 +295,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwUtils.resolveObjectPropertyPath
      */
     resolveObjectPropertyPath(...args) {
- 
         // wwLib.wwLog.warn(
         //     'wwLib.resolveObjectPropertyPath is DEPRECATED, use wwLib.wwUtils.resolveObjectPropertyPath instead'
         // );
@@ -312,7 +306,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwutils.getTextStyleFromContent
      */
     getTextStyleFromContent(...args) {
- 
         // wwLib.wwLog.warn(
         //     'wwLib.getTextStyleFromContent is DEPRECATED, use wwLib.wwUtils.getTextStyleFromContent instead'
         // );
@@ -324,7 +317,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwWorkflow.executeGlobal
      */
     async executeWorkflow(...args) {
- 
         wwLib.wwLog.warn('wwLib.executeWorkflow is DEPRECATED, use wwLib.wwWorkflow.executeGlobal instead');
         return wwLib.wwWorkflow.executeGlobal(...args);
     },
@@ -335,7 +327,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwEditor.findParentUidByFlag
      */
     findParentUidByFlag(...args) {
- 
         wwLib.wwLog.warn('wwLib.wwEditor.findParentUidByFlag is DEPRECATED, use wwLib.findParentUidByFlag instead');
         return wwLib.wwEditor.findParentUidByFlag(...args);
     },
@@ -346,7 +337,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwEditor.selectParentByFlag
      */
     selectParentByFlag(...args) {
- 
         wwLib.wwLog.warn('wwLib.wwEditor.selectParentByFlag is DEPRECATED, use wwLib.selectParentByFlag instead');
         return wwLib.wwEditor.selectParentByFlag(...args);
     },
@@ -356,7 +346,6 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwElement.useCreate
      */
     useCreateElement() {
- 
         wwLib.wwLog.warn('wwLib.useCreateElement is DEPRECATED, use wwLib.wwElement.useCreate instead');
         return this.wwElement.useCreate();
     },
@@ -366,9 +355,18 @@ wwLib.wwPluginHelper.registerPlugin('plugin-6a64802c-52f8-4637-9932-580bf178aaa7
      * @DEPRECATED wwLib.wwElement.useLayoutStyle
      */
     useLayoutStyle() {
- 
         wwLib.wwLog.warn('wwLib.useLayoutStyle is DEPRECATED, use wwLib.wwElement.useLayoutStyle instead');
         return wwLib.wwElement.useLayoutStyle();
+    },
+
+    /**
+     * @PUBLIC_API
+     */
+    useIcons() {
+        const store = useIconsStore();
+        return {
+            getIcon: store.getIcon,
+        };
     },
 };
 

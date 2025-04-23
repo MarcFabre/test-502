@@ -133,7 +133,7 @@ export default {
                 }
                 newCollectionInfo.data = newData;
             }
- 
+
             const collection = {
                 ...currentCollectionInfo,
                 ...newCollectionInfo,
@@ -188,10 +188,17 @@ export default {
         } = {}
     ) {
         const currentCollectionInfo = wwLib.$store.getters['data/getCollections'][collectionId];
-        let newData = JSON.parse(JSON.stringify(data)); // prevent linking reference when binding variables
+        let newData = updateType === 'delete' ? null : JSON.parse(JSON.stringify(data)); // prevent linking reference when binding variables
         let collectionData =
             updateType && Array.isArray(currentCollectionInfo.data) ? [...currentCollectionInfo.data] : newData;
-        let index = updateBy === 'id' ? collectionData.findIndex(item => item[idKey] === idValue) : updateIndex;
+        let index = updateIndex;
+        if (updateBy === 'id') {
+            index = collectionData.findIndex(item => item[idKey] === idValue);
+            if (index === -1) {
+                wwLib.logStore.error(`Item with id ${idValue} not found in collection ${collectionId}`);
+                throw new Error(`Item with id ${idValue} not found in collection ${collectionId}`);
+            }
+        }
         if (updateType === 'insert') {
             collectionData.splice(index, 0, newData);
         } else if (updateType === 'update') {
@@ -247,7 +254,6 @@ export default {
      * @DEPRECATED
      */
     getCollectionData(...args) {
- 
         wwLib.wwLog.warn(
             'wwLib.wwCollection.getCollectionData is DEPRECATED, use wwLib.wwUtils.getDataFromCollection instead.'
         );

@@ -89,6 +89,7 @@ export default {
         const componentContent = inject('componentContent');
         const componentStyle = inject('componentStyle');
         const componentConfiguration = inject('componentConfiguration');
+        const componentWwProps = inject('componentWwProps');
 
         const { rawProperty, property } = useParentContentProperty(toRef(props, 'path'));
 
@@ -98,6 +99,7 @@ export default {
         const boundData = computed(() => {
             if (!isBound.value) return null;
             if (!property.value) return null;
+
             if (Array.isArray(property.value)) {
                 return property.value;
             }
@@ -144,6 +146,11 @@ export default {
             return boundData.value ? boundData.value.length : 0;
         });
 
+        const componentContext = {
+            content: componentContent,
+            wwProps: componentWwProps,
+        };
+
         let restrictedLength;
  
         /* wwFront:start */
@@ -160,7 +167,12 @@ export default {
                     alignItems: 'center',
                 };
             } else if (inheritFrom(componentConfiguration, 'ww-layout')) {
-                return getLayoutStyleFromContent(componentContent, componentStyle, componentConfiguration);
+                return getLayoutStyleFromContent(
+                    componentContent,
+                    componentStyle,
+                    componentConfiguration,
+                    componentContext
+                );
             } else {
                 return {};
             }
@@ -168,7 +180,9 @@ export default {
 
  
 
-        const __wwContainerType = computed(() => getDisplayValue(componentStyle.display, componentConfiguration));
+        const __wwContainerType = computed(() =>
+            getDisplayValue(componentStyle.display, componentConfiguration, componentContext)
+        );
         provide('__wwContainerType', __wwContainerType);
 
         return {
