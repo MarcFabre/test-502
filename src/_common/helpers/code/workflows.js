@@ -5,6 +5,7 @@ import { getComponentLabel } from '@/_common/helpers/component/component.js';
 import { set } from 'lodash';
 import { unref } from 'vue';
 import { useVariablesStore } from '@/pinia/variables.js';
+import { usePopupStore } from '@/pinia/popup';
 
 const metaActionTypes = ['loop', 'while-loop', 'if', 'filter', 'switch'];
 export async function executeWorkflow(
@@ -12,14 +13,12 @@ export async function executeWorkflow(
     { context = {}, event = {}, callstack = [], isError, executionContext, internal } = {}
 ) {
  
-
     let error, result;
     if (!workflow) return {};
     callstack = [...callstack, workflow.id];
 
     if (detectInfinityLoop(callstack)) {
- 
-        wwLib.logStore.info('Possible infinity loop detected! Workflow was stopped.', {
+         wwLib.logStore.info('Possible infinity loop detected! Workflow was stopped.', {
             workflowContext: { workflow, executionContext },
             type: 'action',
         });
@@ -27,7 +26,6 @@ export async function executeWorkflow(
     }
 
  
-
     if (!isError) {
         switch (executionContext?.type) {
             case 'p':
@@ -106,8 +104,7 @@ export async function executeWorkflow(
             executionContext,
             internal,
         });
- 
-        // Always return initial error, we ignore error from the error branch
+         // Always return initial error, we ignore error from the error branch
         wwLib.logStore.info('Error branch done!', {
             workflowContext: { workflow, executionContext },
             type: 'action',
@@ -115,8 +112,7 @@ export async function executeWorkflow(
         return { error, result: errorResult };
     }
 
- 
-    wwLib.logStore.info('Workflow done!', {
+     wwLib.logStore.info('Workflow done!', {
         workflowContext: { workflow, executionContext },
         type: 'action',
     });
@@ -238,21 +234,20 @@ export async function executeWorkflowAction(
 
     if (!fromFunction) {
  
-
         if (!standalone && action.disabled) {
- 
-            return { result };
+             return { result };
         }
 
- 
-    }
+     }
 
     const wwUtils = {
         log: logActionInformation,
     };
 
+    const actionType = action.type.includes(':') ? action.type.split(':')[0] : action.type;
+
     try {
-        switch (action.type) {
+        switch (actionType) {
             case 'custom-js': {
                 if (!action.code) throw new Error('No custom code defined.');
                 result = await executeCode(action.code, context, event, wwUtils);
@@ -389,8 +384,7 @@ export async function executeWorkflowAction(
                 if (action.navigateMode === 'external') {
                     const externalUrl = getValue(action.externalUrl, context, { event });
 
- 
-                    /* wwFront:start */
+                     /* wwFront:start */
                     if (action.openInNewTab) wwLib.getFrontWindow().open(externalUrl, '_blank');
                     else wwLib.getFrontWindow().open(externalUrl, '_self');
                     /* wwFront:end */
@@ -408,8 +402,7 @@ export async function executeWorkflowAction(
                 if (action.mode === 'path') {
                     let path = getValue(action.path, context, { event });
                     if (path !== '/' && path.endsWith('/')) path = path.replace(/\/$/, '');
- 
-                    /* wwFront:start */
+                     /* wwFront:start */
                     href = path;
                     /* wwFront:end */
                 } else {
@@ -418,8 +411,7 @@ export async function executeWorkflowAction(
                     const pageId = typeof value === 'object' ? value.id : value;
                     const page = wwLib.$store.getters['websiteData/getPageById'](pageId);
                     if (!page) throw new Error('Page not found.');
- 
-                    /* wwFront:start */
+                     /* wwFront:start */
                     href = wwLib.wwPageHelper.getPagePath(pageId);
                     /* wwFront:end */
                     const resolvedParameters = Object.keys(action.parameters || {}).reduce(
@@ -430,8 +422,7 @@ export async function executeWorkflowAction(
                         {}
                     );
                     const variables = wwLib.$store.getters['data/getPageParameterVariablesFromId'](pageId);
- 
-                    /* wwFront:start */
+                     /* wwFront:start */
                     for (const variable of variables) {
                         href = href.replace(
                             `{{${variable.id}|${variable.defaultValue || ''}}}`,
@@ -469,8 +460,7 @@ export async function executeWorkflowAction(
             case 'previous-page': {
                 let noBack;
 
- 
-                noBack = !wwLib.getFrontRouter().options.history.state.back;
+                 noBack = !wwLib.getFrontRouter().options.history.state.back;
 
                 if (noBack) {
                     let href;
@@ -479,16 +469,14 @@ export async function executeWorkflowAction(
                     const pageId = typeof value === 'object' ? value.id : value;
                     const page = wwLib.$store.getters['websiteData/getPageById'](pageId);
                     if (!page) throw new Error('Page not found.');
- 
-                    /* wwFront:start */
+                     /* wwFront:start */
                     href = wwLib.wwPageHelper.getPagePath(pageId);
                     /* wwFront:end */
                     wwLib.wwApp.goTo(href);
                     break;
                 }
 
- 
-                wwLib.getFrontRouter().go(-1);
+                 wwLib.getFrontRouter().go(-1);
 
                 break;
             }
@@ -648,8 +636,7 @@ export async function executeWorkflowAction(
                         onUploadProgress: handleFileProgress,
                     });
 
- 
-                    result.push({ url: data.url, name: data.name, ext: data.ext, tag: data.tag, size: data.size });
+                     result.push({ url: data.url, name: data.name, ext: data.ext, tag: data.tag, size: data.size });
                     progress += 100 / files.length;
                 }
                 if (!isMultiple) result = result[0];
@@ -660,20 +647,58 @@ export async function executeWorkflowAction(
                 logActionInformation('info', 'File upload completed', { preview: result });
                 break;
             }
+            case 'execute-inner-workflow': {
+                const _workflowId = action.type.split(':')?.[1] ?? action.workflowId;
+                if (!_workflowId) throw new Error('No workflow selected.');
+
+                const workflow =
+                    wwLib.$store.getters['libraries/getComponents'][context?.component?.baseUid]?.inner?.workflows?.[
+                        _workflowId
+                    ];
+                const childExecutionContext = {
+                    libraryComponentIdentifier: executionContext?.libraryComponentIdentifier,
+                };
+
+                if (!workflow) throw new Error('Workflow not found.');
+
+                logActionInformation('info', `Starting an other workflow (${workflow.name})`);
+
+                const parameters = {};
+                Object.keys(action.parameters || {}).forEach(paramName => {
+                    parameters[paramName] = getValue(action.parameters[paramName], context, { event });
+                });
+                const execution = await executeWorkflow(workflow, {
+                    context: {
+                        ...context,
+                        parameters,
+                        workflow: context?.component?.workflowsResults?.[_workflowId] || {},
+                    },
+                    event,
+                    callstack,
+                    internal: true,
+                    executionContext: childExecutionContext,
+                });
+                result = execution.result;
+                if (execution.error) {
+                    throw execution.error;
+                }
+                break;
+            }
             case 'execute-workflow': {
-                if (!action.workflowId) throw new Error('No workflow selected.');
+                const _workflowId = action.type.split(':')?.[1] ?? action.workflowId;
+                if (!_workflowId) throw new Error('No workflow selected.');
 
                 let workflow;
                 let childExecutionContext;
                 if (action.internal) {
                     workflow =
                         wwLib.$store.getters['libraries/getComponents'][context?.component?.baseUid]?.inner
-                            ?.workflows?.[action.workflowId];
+                            ?.workflows?.[_workflowId];
                     childExecutionContext = {
                         libraryComponentIdentifier: executionContext?.libraryComponentIdentifier,
                     };
                 } else {
-                    workflow = wwLib.$store.getters['data/getGlobalWorkflows'][action.workflowId];
+                    workflow = wwLib.$store.getters['data/getGlobalWorkflows'][_workflowId];
                 }
                 if (!workflow) throw new Error('Workflow not found.');
 
@@ -688,8 +713,8 @@ export async function executeWorkflowAction(
                         ...context,
                         parameters,
                         workflow: action.internal
-                            ? context?.component?.workflowsResults?.[action.workflowId] || {}
-                            : wwLib.$store.getters['data/getWorkflowResults'](action.workflowId),
+                            ? context?.component?.workflowsResults?.[_workflowId] || {}
+                            : wwLib.$store.getters['data/getWorkflowResults'](_workflowId),
                     },
                     event,
                     callstack,
@@ -821,7 +846,6 @@ export async function executeWorkflowAction(
                 wwLib.getFrontWindow().print();
 
  
-
                 break;
             }
             case 'loop': {
@@ -1057,6 +1081,43 @@ export async function executeWorkflowAction(
                 logActionInformation('info', `Changed to ${theme} theme`);
                 break;
             }
+            case 'open-popup': {
+                const _action = JSON.parse(JSON.stringify(action));
+
+                const modalsStore = usePopupStore(wwLib.$pinia);
+
+                // AI Fix : AI sometimes use the label as the key of the popup properties
+                const popup = wwLib.$store.getters['libraries/getComponents']?.[_action.libraryComponentBaseId];
+                const popupProperties = popup?.configuration?.properties || {};
+
+                for (const key in _action.content?.default || {}) {
+                    if (Object.keys(popupProperties).includes(key)) continue;
+                    else {
+                        const propByLabel = Object.values(popupProperties).find(prop => prop.label === key);
+                        if (propByLabel) {
+                            _action.content.default[propByLabel.id] = _action.content.default[key];
+                        }
+                    }
+                }
+
+                result = await modalsStore.open(
+                    _action.libraryComponentBaseId,
+                    getValue(_action.content, context, { event }),
+                    {
+                        waitClosing: _action.waitClosing,
+                    }
+                );
+                break;
+            }
+            case 'close-popup': {
+                await context.local?.methods.popup.close.method(getValue(action.data, context, { event }));
+                break;
+            }
+            case 'close-all-popup': {
+                const modalsStore = usePopupStore(wwLib.$pinia);
+                modalsStore.closeAll(action.libraryComponentBaseId);
+                break;
+            }
             default: {
                 if (action.type.startsWith('_wwLocalMethod_')) {
                     const match = action.type.match(/_wwLocalMethod_(.+)\.(.+)/);
@@ -1114,7 +1175,6 @@ export async function executeWorkflowAction(
             }
 
  
-
             if (!metaActionTypes.includes(action.type)) {
                 switch (action.type) {
                     case 'file-encode-base64':
@@ -1141,8 +1201,7 @@ export async function executeWorkflowAction(
                 });
             }
 
- 
-            if (err) {
+             if (err) {
                 wwLib.logStore.error('An error happened during the execution of the workflow', {
                     type: 'action',
                     error: err,
@@ -1156,7 +1215,7 @@ export async function executeWorkflowAction(
     return { result, stop, breakLoop };
 }
 
-export async function executeWorkflowActionAsFunction(type, params = {}) {
+export async function executeWorkflowActionAsFunction(type, params = {}, context = {}) {
     const workflow = {
         id: 'wf_id',
         firstActionId: 'action_id',
@@ -1170,7 +1229,7 @@ export async function executeWorkflowActionAsFunction(type, params = {}) {
             },
         },
     };
-    const { result } = await executeWorkflowAction(workflow, 'action_id', { fromFunction: true });
+    const { result } = await executeWorkflowAction(workflow, 'action_id', { context, fromFunction: true });
     return result;
 }
 
@@ -1286,6 +1345,23 @@ export const workflowFunctions = {
         return await executeWorkflowActionAsFunction('upload-file', { varId, fileTag });
     },
 
+    openPopup: async (libraryComponentBaseId, params) => {
+        // Check if the libraryComponentBaseId is a popup (libraryComponentBaseId of type 'modal'), otherwise use its parentLibraryComponentId
+        const element = wwLib.$store.getters['websiteData/getWwObjects']?.[libraryComponentBaseId];
+        if (element?.parentLibraryComponentId) {
+            libraryComponentBaseId = element.parentLibraryComponentId;
+        }
+
+        return await executeWorkflowActionAsFunction('open-popup', {
+            libraryComponentBaseId,
+            content: { default: params },
+        });
+    },
+
+    closePopup: async (context, data) => {
+        return await context.local.methods.popup.close.method(data);
+    },
+
     //Workflows and Elements
     /* Params:
         - ...args: List of args of the function
@@ -1299,7 +1375,10 @@ export const workflowFunctions = {
             get(_target, workflowId) {
                 return async (...args) => {
                     const globalWorkflow = wwLib.$store.getters['data/getGlobalWorkflows'][workflowId];
-                    if (!globalWorkflow) throw new Error(`Workflow "${workflowId}" not found.`);
+                    if (!globalWorkflow) {
+                        wwLib.logStore.error(`Global workflow "${workflowId}" not found.`);
+                        throw new Error(`Global workflow "${workflowId}" not found.`);
+                    }
                     const globalWorkflowParameters = globalWorkflow.parameters || [];
                     const parameters = {};
                     for (const i in args) {
@@ -1312,6 +1391,74 @@ export const workflowFunctions = {
             },
         }
     ),
+
+    // executeInnerFunction: context => {
+    //     return new Proxy(
+    //         {},
+    //         {
+    //             get(_target, workflowId) {
+    //                 return async (...args) => {
+    //                     // Get component workflow
+    //                     const componentWorkflow = wwLib.$store.getters['libraries/getComponents'][context.component.baseUid]?.inner?.workflows?.[workflowId];
+    //                     if (!componentWorkflow) {
+    //                         wwLib.logStore.error(`Component workflow "${workflowId}" not found.`);
+    //                         throw new Error(`Component workflow "${workflowId}" not found.`);
+    //                     }
+
+    //                     const parameters = {};
+    //                     for (const i in args) {
+    //                         if (componentWorkflow.parameters[i]?.name) {
+    //                             parameters[componentWorkflow.parameters[i].name] = args[i];
+    //                         }
+    //                     }
+    //                     return await executeWorkflowActionAsFunction(
+    //                         'execute-inner-workflow',
+    //                         { workflowId, parameters, internal: true },
+    //                         context
+    //                     );
+    //                 };
+    //             },
+    //         }
+    //     );
+    // },
+
+    executePopupFunction: context => {
+        // Return the proxy of the context
+        return new Proxy(
+            {},
+            {
+                get(_target, workflowId) {
+                    return async (...args) => {
+                        // Get popup library component
+                        const libraryComponent = Object.values(wwLib.$store.getters["libraries/getComponents"])
+                            ?.find(e => e.id == context.component.baseUid && e.type == 'modal');
+                        if (!libraryComponent)
+                            throw new Error(`Library component "${context.component.baseUid}" not found.`);
+
+                        // Get popup workflow
+                        const popupWorkflow = libraryComponent.inner.workflows?.[workflowId];
+                        if (!popupWorkflow) {
+                            wwLib.logStore.error(`Popup workflow "${workflowId}" not found.`);
+                            throw new Error(`Popup workflow "${workflowId}" not found.`);
+                        }
+
+                        const parameters = {};
+                        for (const i in args) {
+                            if (popupWorkflow.parameters[i]?.name) {
+                                parameters[popupWorkflow.parameters[i].name] = args[i];
+                            }
+                        }
+                        return await executeWorkflowActionAsFunction(
+                            'execute-workflow',
+                            { workflowId, parameters, internal: true },
+                            context
+                        );
+                    };
+                },
+            }
+        );
+    },
+
     /* Params:
         - uid: string, uid of the element
         - actionName: string, name of the action to execute
@@ -1340,7 +1487,6 @@ function convertErrorToObject(err) {
 }
 
  
-
 function truncateString(str, maxLength) {
     if (str.length > maxLength) {
         return str.substring(0, maxLength) + '...';

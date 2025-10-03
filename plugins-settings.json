@@ -1,9 +1,65 @@
 {
     "2bd1c688-31c5-443e-ae25-59aa5b6431fb": {
-        "id": "ed1f650c-718f-4a30-bf05-fae6db81699c",
+        "id": "d2f6d465-6944-4d13-99af-c8de5ad5272b",
         "name": "REST API",
-        "designId": "dbdf6bd3-90fc-4421-9c6b-c1681585151b",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
         "pluginId": "2bd1c688-31c5-443e-ae25-59aa5b6431fb",
+        "publicData": {}
+    },
+    "832d6f7a-42c3-43f1-a3ce-9a678272f811": {
+        "id": "3fb860e2-6a33-4eb1-9c60-58ce0085c75d",
+        "name": "Date",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "832d6f7a-42c3-43f1-a3ce-9a678272f811",
+        "publicData": {}
+    },
+    "9c40819b-4a8f-468f-9ba5-4b9699f3361f": {
+        "id": "b9c17e63-fe2b-4879-92cb-ece5b381a560",
+        "name": "Charts",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "9c40819b-4a8f-468f-9ba5-4b9699f3361f",
+        "publicData": {}
+    },
+    "29809245-a5ea-4687-af79-952998abab22": {
+        "id": "1d7229e3-e306-4292-9987-e6404e3492bb",
+        "name": "Airtable",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "29809245-a5ea-4687-af79-952998abab22",
+        "publicData": {}
+    },
+    "cd33cf33-e29f-4e8c-ac26-b997fe507ce7": {
+        "id": "c4c146ee-e9a5-444b-8690-e84f131e8d0a",
+        "name": "Xano",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "cd33cf33-e29f-4e8c-ac26-b997fe507ce7",
+        "publicData": {}
+    },
+    "f9ef41c3-1c53-4857-855b-f2f6a40b7186": {
+        "id": "2899b191-b195-4ed2-a8b3-71979be45c3c",
+        "name": "Supabase",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "f9ef41c3-1c53-4857-855b-f2f6a40b7186",
+        "publicData": {}
+    },
+    "f5856798-485d-47be-b433-d43d771c64e1": {
+        "id": "67a5110c-2d98-4269-aa74-841be1b0f9f8",
+        "name": "Xano Auth",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "f5856798-485d-47be-b433-d43d771c64e1",
+        "publicData": {}
+    },
+    "1fa0dd68-5069-436c-9a7d-3b54c340f1fa": {
+        "id": "5178616f-09cd-4e5b-91fb-36b804b832ea",
+        "name": "Supabase Auth",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "1fa0dd68-5069-436c-9a7d-3b54c340f1fa",
+        "publicData": {}
+    },
+    "1506e088-e31c-49bc-83a1-90a3de4f6db1": {
+        "id": "e6247611-da12-4a1f-a964-b610f9fc6c1a",
+        "name": "SQL",
+        "designId": "e9674bdb-38d6-48b6-8079-605507059749",
+        "pluginId": "1506e088-e31c-49bc-83a1-90a3de4f6db1",
         "publicData": {}
     }
 }

@@ -4,13 +4,12 @@ import { VueCookieNext } from 'vue-cookie-next';
 import { isEqual, isEmpty, cloneDeep, get, set, merge } from 'lodash';
 
  
-
 /* wwFront:start */
 import { createHead } from '@vueuse/head';
 /* wwFront:end */
 
 import App from '@/_front/App.vue';
-import router from '@/_front/router';
+import router from '@/_front/router.js';
 
 let store;
 let pinia;
@@ -36,21 +35,27 @@ if ('serviceWorker' in navigator) {
             }
         });
     } else {
-        navigator.serviceWorker.register(`serviceworker.js?_wwcv=${window.wwg_cacheVersion}`).catch(error => {
-            console.error('Service worker registration failed:', error);
-        });
+        const baseTag = window.wwg_designInfo?.baseTag;
+        let href = baseTag?.href || null;
+        if (href) {
+            if (!href.startsWith('/')) href = `/${href}`;
+            if (!href.endsWith('/')) href = `${href}/`;
+        }
+        navigator.serviceWorker
+            .register(`${href ?? '/'}serviceworker.js?_wwcv=${window.wwg_cacheVersion}`)
+            .catch(error => {
+                console.error('Service worker registration failed:', error);
+            });
     }
 }
 /* wwFront:end */
  
-
-import wwElements from '@/_front/components/';
-import { addMediaQueriesListener } from '../helpers/mediaQueriesListener';
-import globalServices from '@/_common/plugins/globalServices';
+import wwElements from '@/_front/components/index.js';
+import { addMediaQueriesListener } from '../helpers/mediaQueriesListener.js';
+import globalServices from '@/_common/plugins/globalServices.js';
 
  
-
-require('@/assets/css');
+import '@/assets/css';
 
 //Set window libraries
 window._ = {
@@ -64,7 +69,6 @@ window._ = {
 window.axios = axios.create({});
 
  
-
 const app = createApp(App);
 
 const init = async function () {
@@ -80,9 +84,7 @@ const init = async function () {
     /* wwFront:end */
 
  
-
  
-
     await wwLib.initFront({ store, router });
 
     app.use(router);

@@ -15,7 +15,6 @@ export function useRestoreContext({ path }) {
     const context = inject('_wwLibraryComponentContext', {});
 
  
-
     const parentBindingContext = inject('bindingContext', null);
     if (!parentBindingContext) {
         provide('bindingContext', layers?.[libraryComponentId]?.savedContext?.bindingContext);

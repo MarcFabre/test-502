@@ -17,7 +17,6 @@ export function useComponentStates({ uid, type }, { context = {}, propsState = [
     watch(
         () => {
  
-
             // Props states are passed as name, this is easier for UX point of view. So we need to check that too
             return rawStates.value
                 .filter(
@@ -40,7 +39,6 @@ export function useComponentStates({ uid, type }, { context = {}, propsState = [
     );
 
  
-
     // Lazy is important, or all children will be recalculate for nothing
     const lazyProvidedStates = ref([]);
     watch(
@@ -65,18 +63,14 @@ export function useComponentStates({ uid, type }, { context = {}, propsState = [
 
     return {
         currentStates: lazyCurrentStates,
- 
-        addInternalState(state, disabledOnEdit) {
- 
-            internalStates.add(state);
+         addInternalState(state, disabledOnEdit) {
+             internalStates.add(state);
         },
         removeInternalState(state, disabledOnEdit) {
- 
-            internalStates.delete(state);
+             internalStates.delete(state);
         },
         toggleInternalState(state, disabledOnEdit) {
- 
-            if (internalStates.has(state)) {
+             if (internalStates.has(state)) {
                 internalStates.delete(state);
             } else {
                 internalStates.add(state);

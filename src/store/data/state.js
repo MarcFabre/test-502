@@ -6,6 +6,5 @@ export default function state() {
         pluginFormulas: {},
         globalWorkflows: {},
         workflowsResults: {},
- 
-    };
+     };
 }

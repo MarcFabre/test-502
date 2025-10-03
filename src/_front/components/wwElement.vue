@@ -1,24 +1,20 @@
 <template>
     <wwLibraryComponent v-if="isLibraryComponent" :key="uid" :uid="uid" v-bind="$attrs"></wwLibraryComponent>
     <template v-else>
- 
-            <wwElementComponent ref="elementComponent" v-bind="$attrs" :key="`${uid}_${parentKey}`" :uid="uid">
+             <wwElementComponent ref="elementComponent" v-bind="$attrs" :key="`${uid}_${parentKey}`" :uid="uid">
                 <slot></slot>
             </wwElementComponent>
- 
-    </template>
+     </template>
 </template>
 
 <script>
- 
-import wwElementComponent from '@/_front/components/wwElementComponent.vue';
+ import wwElementComponent from '@/_front/components/wwElementComponent.vue';
 import wwLibraryComponent from './wwLibraryComponent.vue';
 
 export default {
     name: 'wwElement',
     components: {
- 
-        wwElementComponent,
+         wwElementComponent,
         wwLibraryComponent,
     },
     inheritAttrs: false,
@@ -42,7 +38,6 @@ export default {
                 return null;
             }
         },
- 
-    },
+     },
 };
 </script>

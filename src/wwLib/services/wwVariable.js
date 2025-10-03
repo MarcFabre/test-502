@@ -16,7 +16,7 @@ export default {
     /**
      * @PUBLIC_API
      */
-    updateValue(variableId, value, { path, index, arrayUpdateType, workflowContext } = {}) {
+    updateValue(variableId, value, { path, index, arrayUpdateType, workflowContext, silent } = {}) {
         const variablesStore = useVariablesStore(wwLib.$pinia);
         const variable = variablesStore.getConfiguration(variableId);
         try {
@@ -32,7 +32,7 @@ export default {
             }
 
             value = checkVariableType(variable, value, { path, arrayUpdateType });
-            variablesStore.setValue(variableId, value, { path, index, arrayUpdateType, workflowContext });
+            variablesStore.setValue(variableId, value, { path, index, arrayUpdateType, workflowContext, silent });
 
             return value;
         } catch (error) {
@@ -222,8 +222,7 @@ export default {
     },
     unregisterComponentVariable,
     unregisterLibraryComponentVariable,
- 
-};
+ };
 
 function registerLibraryComponentVariable({
     uid,

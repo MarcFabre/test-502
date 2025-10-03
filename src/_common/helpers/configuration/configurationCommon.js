@@ -915,5 +915,4 @@ export const STATE_CONFIGURATION = {
         noRootMerge: true,
         bindable: true,
     },
- 
-};
+ };

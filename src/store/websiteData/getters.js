@@ -1,6 +1,5 @@
 import utils from './utils';
  
-
 export default {
     /*=============================================m_ÔÔ_m=============================================\
         DESIGN
@@ -20,17 +19,14 @@ export default {
         return state.design.info;
     },
  
-
     /*=============================================m_ÔÔ_m=============================================\
         PAGES
     \================================================================================================*/
     getPages(state) {
- 
-        // eslint-disable-next-line no-unreachable
+         // eslint-disable-next-line no-unreachable
         return state.design.pages;
     },
- 
-    getPage: state => state.design.pages.find(page => page.id === state.pageId),
+     getPage: state => state.design.pages.find(page => page.id === state.pageId),
     getPageById: state => id => state.design.pages.find(page => page.id === id),
     getPageByLinkId: state => linkId => state.design.pages.find(page => page.linkId === linkId || page.id === linkId),
     getFullPage(state) {
@@ -45,40 +41,37 @@ export default {
     \================================================================================================*/
     getComponentAvailableStates:
         state =>
-        ({ type, uid }) => {
-            let _state;
-            if (type === 'section') {
-                _state = (state.sections[uid] && state.sections[uid]._state) || {};
-            } else {
-                _state = (state.wwObjects[uid] && state.wwObjects[uid]._state) || {};
-            }
-            return (_state.states || []).map(state => state.id);
-        },
+            ({ type, uid }) => {
+                let _state;
+                if (type === 'section') {
+                    _state = (state.sections[uid] && state.sections[uid]._state) || {};
+                } else {
+                    _state = (state.wwObjects[uid] && state.wwObjects[uid]._state) || {};
+                }
+                return (_state.states || []).map(state => state.id);
+            },
     getComponentRawStates:
         state =>
-        ({ type, uid }) => {
-            let _state;
-            if (type === 'section') {
-                _state = (state.sections[uid] && state.sections[uid]._state) || {};
-            } else {
-                _state = (state.wwObjects[uid] && state.wwObjects[uid]._state) || {};
-            }
-            return _state.states || [];
-        },
+            ({ type, uid }) => {
+                let _state;
+                if (type === 'section') {
+                    _state = (state.sections[uid] && state.sections[uid]._state) || {};
+                } else {
+                    _state = (state.wwObjects[uid] && state.wwObjects[uid]._state) || {};
+                }
+                return _state.states || [];
+            },
     getWwObjectStyle: state => id => {
         const { _state = {} } = state.wwObjects[id] || {};
         return _state.style || {};
     },
     getFullWwObject:
         state =>
-        (uid, asTemplate = false) => {
-            return utils.parseFullObject(state, { uid, isWwObject: true }, asTemplate);
-        },
+            (uid, asTemplate = false) => {
+                return utils.parseFullObject(state, { uid, isWwObject: true }, asTemplate);
+            },
     getWwObjects(state) {
         return state.wwObjects;
-    },
-    getWwObjectContext(state) {
-        return state.wwObjectContext;
     },
     /*=============================================m_ÔÔ_m=============================================\
       SECTIONS
@@ -112,8 +105,7 @@ export default {
         PLUGINS
     \================================================================================================*/
     getPlugins: state => state.plugins,
- 
-    getPluginByComponentId: state => componentId =>
+     getPluginByComponentId: state => componentId =>
         state.plugins.find(plugin => plugin.id && `plugin-${plugin.id}` === componentId),
     getPluginByName: state => name => state.plugins.find(plugin => plugin.namespace === name),
     getPluginById: state => id => state.plugins.find(plugin => id && plugin.id === id),

@@ -3,7 +3,6 @@ import { executeWorkflows, resetWorkflows } from './workflows';
 import { useVariablesStore } from '@/pinia/variables.js';
 
  
-
 let isFirstLoad = true;
 const beforeUnload = () => {
     executeWorkflows('page-unload');

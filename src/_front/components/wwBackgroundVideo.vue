@@ -13,8 +13,7 @@ export default {
     computed: {
         poster() {
             if (this.video.poster) {
- 
-                /* wwFront:start */
+                 /* wwFront:start */
                 // eslint-disable-next-line no-unreachable
                 return `${this.video.poster}`;
                 /* wwFront:end */
@@ -47,8 +46,7 @@ export default {
             return attributes;
         },
     },
- 
-    mounted() {
+     mounted() {
         // We need to delay video play for not have error on Chrome and Safari
         // https://medium.com/@naivetech/video-inside-html-video-tag-not-playing-in-chrome-or-safari-fixed-2a9849d66fa4
         // TODO: probably have to recheck this behavior on editor when changing the url

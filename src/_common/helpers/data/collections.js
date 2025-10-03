@@ -6,8 +6,7 @@ export async function fetchStaticCollectionsData() {
 }
 
 export async function fetchNonStaticCollectionsData() {
- 
-    /* wwFront:start */
+     /* wwFront:start */
     await _fetchNonStaticCollectionsData(Object.values(wwLib.$store.getters['data/getCollections']));
     /* wwFront:end */
 }

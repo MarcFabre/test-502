@@ -4,13 +4,11 @@
         class="ww-layout"
         :data-ww-layout-id="layoutId"
         :class="{
- 
-        }"
+         }"
         :style="layoutStyle"
     >
         <slot name="header"></slot>
- 
-        <template v-if="internalList[0]">
+         <template v-if="internalList[0]">
             <wwLayoutItemContext
                 v-for="index in restrictedLength"
                 :key="isBound ? `${internalList[0].uid}_${index - 1}` : `${internalList[index - 1].uid}`"
@@ -27,8 +25,7 @@
                         data: isBound && boundData ? boundData[offset + index - 1] : null,
                         layoutId,
                         itemStyle: getItemStyle(index - 1),
- 
-                    }"
+                     }"
                 >
                     <wwElement
                         v-bind="isBound ? internalList[0] : internalList[index - 1]"
@@ -37,8 +34,7 @@
                 </slot>
             </wwLayoutItemContext>
         </template>
- 
-    </component>
+     </component>
 </template>
 
 <script>
@@ -50,18 +46,17 @@ const PUSH_LAST_STYLE_HORIZONTAL = {
 };
 import { computed, inject, toRef, reactive, provide, onUnmounted, ref } from 'vue';
 
-import { useParentContentProperty } from '@/_common/use/useComponent';
-import { getDisplayValue } from '@/_common/helpers/component/component';
-import { inheritFrom } from '@/_common/helpers/configuration/configuration';
+import { useParentContentProperty } from '@/_common/use/useComponent.js';
+import { getDisplayValue } from '@/_common/helpers/component/component.js';
+import { inheritFrom } from '@/_common/helpers/configuration/configuration.js';
 
-import { getLayoutStyleFromContent } from '@/_front/helpers/wwLayoutStyle';
-import { useRestoreContext } from '@/_front/use/useRestoreContext';
+import { getLayoutStyleFromContent } from '@/_front/helpers/wwLayoutStyle.js';
+import { useRestoreContext } from '@/_front/use/useRestoreContext.js';
 
-import wwLayoutItem from './wwLayoutItem';
-import wwLayoutItemContext from './wwLayoutItemContext';
+import wwLayoutItem from './wwLayoutItem.vue';
+import wwLayoutItemContext from './wwLayoutItemContext.vue';
 
  
-
 let layoutId = 1;
 const MAX_REPEAT = 200;
 
@@ -83,7 +78,7 @@ export default {
         const id = layoutId++;
         const parentElementUid = inject('_wwElementUid', null);
         const parentElementComponentId = inject('_wwElementComponentId', null);
-        const sectionId = inject('sectionId');
+        const sectionId = inject('sectionId', null);
         const bindingContext = inject('bindingContext', null);
 
         const componentContent = inject('componentContent');
@@ -152,8 +147,7 @@ export default {
         };
 
         let restrictedLength;
- 
-        /* wwFront:start */
+         /* wwFront:start */
         // eslint-disable-next-line vue/no-ref-as-operand
         restrictedLength = length;
         /* wwFront:end */
@@ -179,7 +173,6 @@ export default {
         });
 
  
-
         const __wwContainerType = computed(() =>
             getDisplayValue(componentStyle.display, componentConfiguration, componentContext)
         );
@@ -202,18 +195,14 @@ export default {
             componentContent,
             componentStyle,
             restrictedLength,
- 
-        };
+         };
     },
     computed: {
- 
-    },
+     },
 
     watch: {
- 
-    },
- 
-    methods: {
+     },
+     methods: {
         // TODO: one day extrastyle should be removed, now that we do not have wrapper anymore maybe?
         getItemStyle(index) {
             if (this.componentContent['_ww-layout_pushLast']) {
@@ -229,8 +218,7 @@ export default {
             }
             return;
         },
- 
-    },
+     },
 };
 </script>
 
@@ -241,10 +229,8 @@ export default {
     pointer-events: initial;
     position: relative;
 
- 
-}
+ }
 </style>
 
 <style lang="scss" scoped>
- 
-</style>
+ </style>

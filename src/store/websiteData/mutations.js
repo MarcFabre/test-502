@@ -1,5 +1,4 @@
  
-
 import { getPath } from '@/_common/helpers/pathResolver';
 
 export default {
@@ -20,7 +19,6 @@ export default {
         state.design.info.fonts = fonts;
     },
  
-
     /*=============================================m_ÔÔ_m=============================================\
         PAGE
     \================================================================================================*/
@@ -59,9 +57,7 @@ export default {
         state.pageId = id;
     },
  
-
  
-
     /*=============================================m_ÔÔ_m=============================================\
         PLUGINS
     \================================================================================================*/
@@ -79,8 +75,7 @@ export default {
                 name: plugin.name,
                 namespace: plugin.namespace,
                 settings: plugin.settings,
- 
-            });
+             });
         }
     },
     updatePlugin(state, { pluginId, settings, isDev, isLoaded }) {

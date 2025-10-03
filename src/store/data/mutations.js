@@ -26,8 +26,7 @@ export default {
     deleteCollection(state, collectionId) {
         delete state.collections[collectionId];
     },
- 
-    setCollectionFetching(state, { id, isFetching, isFetched }) {
+     setCollectionFetching(state, { id, isFetching, isFetched }) {
         set(state.collections[id], 'isFetching', isFetching);
         if (isFetched !== undefined) set(state.collections[id], 'isFetched', isFetched);
         else set(state.collections[id], 'isFetched', !isFetching);
@@ -47,8 +46,7 @@ export default {
     setFormula(state, formula) {
         set(state.formulas, formula.id, formula);
     },
- 
-    setPluginFormula(state, formula) {
+     setPluginFormula(state, formula) {
         set(state.pluginFormulas, formula.id, formula);
     },
     /*=============================================m_ÔÔ_m=============================================\
@@ -73,5 +71,4 @@ export default {
     resetWorkflowsResult(state) {
         state.workflowsResults = {};
     },
- 
-};
+ };

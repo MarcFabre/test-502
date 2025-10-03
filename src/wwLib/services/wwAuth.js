@@ -88,5 +88,4 @@ export default {
         }
         return roles.every(role => this.getUserRoles().includes(role));
     },
- 
-};
+ };

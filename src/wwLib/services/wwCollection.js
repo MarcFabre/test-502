@@ -60,21 +60,18 @@ export default {
                 {};
 
             if (data || error) {
- 
-                return Array.isArray(data)
+                 return Array.isArray(data)
                     ? {
                           total: total || data.length,
                           offset,
                           data,
                           type: 'collection',
                           error,
- 
-                      }
+                       }
                     : { data, error, type: 'single' };
             }
         }
- 
-        /* wwFront:start */
+         /* wwFront:start */
         // eslint-disable-next-line no-unreachable
         const { data: dataFromPreview } = await axios.post(
             `//${window.location.hostname}/ww/cms_data_sets/${id}/fetch?limit=${limit}&offset=${offset}`,
@@ -221,7 +218,6 @@ export default {
         });
     },
  
-
     /**
      * @PUBLIC_API
      */

@@ -1,6 +1,7 @@
 import { ref, inject, computed, unref, watch } from 'vue';
 import { getLayoutStyleFromContent } from '@/_front/helpers/wwLayoutStyle';
 import { useRegisterElementLocalContext } from '@/_front/use/useElementLocalContext';
+import { getComponentLabel } from '@/_common/helpers/component/component.js';
 /* wwFront:start */
 import { useRoute } from 'vue-router';
 /* wwFront:end */
@@ -16,22 +17,19 @@ export default {
                 /* wwFront:start */
                 wwLib.wwLog.warn('The function "createElement" should not be called on the production website.');
                 /* wwFront:end */
- 
-            },
+             },
             async createElementFromTemplate(template, { keepChildren } = {}) {
                 /* wwFront:start */
                 wwLib.wwLog.warn(
                     'The function "createElementFromTemplate" should not be called on the production website.'
                 );
                 /* wwFront:end */
- 
-            },
+             },
             async cloneElement(uid, { name } = {}) {
                 /* wwFront:start */
                 wwLib.wwLog.warn('The function "cloneElement" should not be called on the production website.');
                 /* wwFront:end */
- 
-            },
+             },
         };
     },
 
@@ -80,7 +78,7 @@ export default {
 
         const addInternalState = inject('wwAddInternalState', () => {});
         const removeInternalState = inject('wwRemoveInternalState', () => {});
-        const sectionId = inject('sectionId');
+        const sectionId = inject('sectionId', null);
         const bindingContext = inject('bindingContext', null);
         /* wwFront:start */
         const route = useRoute();
@@ -132,8 +130,7 @@ export default {
                     const variables = Object.values(
                         wwLib.$store.getters['data/getPageParameterVariablesFromId'](rawLink.pageId)
                     );
- 
-                    /* wwFront:start */
+                     /* wwFront:start */
                     if (!rawLink.pageId) link.href = '';
                     else {
                         const pageId = `${rawLink.pageId}${
@@ -212,15 +209,13 @@ export default {
         const tag = computed(() => {
             if (normalizedLink.value.type === 'none') return 'div';
             if (normalizedLink.value.type === 'open-popup' || normalizedLink.value.type === 'close-popup') return 'div';
- 
-            // eslint-disable-next-line no-unreachable
+             // eslint-disable-next-line no-unreachable
             if (normalizedLink.value.type === 'internal' || normalizedLink.value.type === 'collection')
                 return 'router-link';
             else return 'a';
         });
 
  
-
         const isOnSamePage = computed(() => {
             /* wwFront:start */
             if (normalizedLink.value.href) {
@@ -241,8 +236,7 @@ export default {
                 return false;
             }
             /* wwFront:end */
- 
-        });
+         });
 
         watch(
             isOnSamePage,
@@ -286,8 +280,7 @@ export default {
                 return;
             }
 
- 
-            /* wwFront:start */
+             /* wwFront:start */
             if (attributes.target) {
                 window.open(attributes.href).focus();
             } else {
@@ -308,8 +301,7 @@ export default {
                     case 'close-popup':
                         properties.onClick = event => {
                             if (unref(isDisabled)) return;
- 
-                            event.stopPropagation();
+                             event.stopPropagation();
 
                             // eslint-disable-next-line vue/custom-event-name-casing
                             wwLib.$emit('wwLink:closePopup');
@@ -319,8 +311,7 @@ export default {
                     case 'open-popup':
                         properties.onClick = event => {
                             if (unref(isDisabled)) return;
- 
-                            event.stopPropagation();
+                             event.stopPropagation();
 
                             wwLib.$store.dispatch('front/setActiveLinkPopup', {
                                 content: normalizedLink.value.content,
@@ -376,8 +367,7 @@ export default {
                         if ((tag.value !== 'router-link' && tag.value !== 'a') || scrollToSection) {
                             if (unref(isDisabled)) return;
                             properties.onClick = event => {
- 
-                                if (normalizedLink.value.loadProgress && !isOnSamePage.value)
+                                 if (normalizedLink.value.loadProgress && !isOnSamePage.value)
                                     wwLib.$store.dispatch('front/showPageLoadProgress', {
                                         color: normalizedLink.value.loadProgressColor,
                                     });
@@ -385,8 +375,7 @@ export default {
                             };
                         } else {
                             properties.onClick = event => {
- 
-                                // eslint-disable-next-line vue/custom-event-name-casing
+                                 // eslint-disable-next-line vue/custom-event-name-casing
                                 wwLib.$emit('wwLink:clicked');
                                 if (normalizedLink.value.loadProgress && !isOnSamePage.value)
                                     wwLib.$store.dispatch('front/showPageLoadProgress', {
@@ -411,4 +400,9 @@ export default {
      * @PUBLIC_API
      */
     useRegisterElementLocalContext,
+
+    /**
+     * @PUBLIC_API
+     */
+    getComponentLabel,
 };

@@ -4,16 +4,14 @@ import { useVariablesStore } from '@/pinia/variables.js';
 import { cloneDeep } from 'lodash';
 
 export default {
- 
-    async registerPlugin(componentId, content, devOptions = null) {
+     async registerPlugin(componentId, content, devOptions = null) {
         const plugin =
             wwLib.$store.getters['websiteData/getPluginByComponentId'](componentId) ||
             wwLib.$store.getters['websiteData/getPluginByName'](componentId) ||
             (await wwLib.$store.dispatch('websiteData/addDevPlugin', { ...(devOptions || {}) }));
         if (!wwLib.wwPlugins) wwLib.wwPlugins = shallowReactive({});
         let settings;
- 
-        /* wwFront:start */
+         /* wwFront:start */
         // eslint-disable-next-line
         settings = window.wwg_pluginsSettings[plugin.id] || { publicData: {}, privateData: {} };
         /* wwFront:end */
@@ -21,7 +19,6 @@ export default {
         const store = useComponentBasesStore(wwLib.$pinia);
         const config = store.configurations[componentId];
  
-
         wwLib.$store.dispatch('websiteData/updatePlugin', {
             pluginId: plugin.id,
             settings,
@@ -34,8 +31,7 @@ export default {
             settings,
         });
 
- 
-    },
+     },
     mountPlugin(plugin, { content = {}, config = {}, settings = {} }) {
         wwLib.wwPlugins[plugin.namespace] = {
             ...content,
@@ -52,7 +48,7 @@ export default {
             },
             get settings() {
                 const pluginFound = wwLib.$store.getters['websiteData/getPluginByName'](plugin.namespace) || {};
-                return _.cloneDeep(
+                return cloneDeep(
                     wwLib.$store.getters['websiteData/getPluginSettings'](pluginFound.id) || {
                         publicData: {},
                         privateData: {},
@@ -100,8 +96,7 @@ export default {
             });
         });
 
- 
-        // eslint-disable-next-line no-async-promise-executor
+         // eslint-disable-next-line no-async-promise-executor
         const isLoaded = new Promise(async resolve => {
             try {
                 if (wwLib.wwPlugins[plugin.namespace]._onLoad)

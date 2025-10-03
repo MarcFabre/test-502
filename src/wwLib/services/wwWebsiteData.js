@@ -1,21 +1,17 @@
  
-
 export default {
     async init() {
         /* wwFront:start */
         const designInfo = wwLib.getFrontWindow().wwg_designInfo;
         await wwLib.$store.dispatch('websiteData/setFullDesign', designInfo);
         /* wwFront:end */
- 
-    },
+     },
 
     async fetchPage(pageId) {
  
-
         wwLib.logStore.verbose(`Loading page: _wwPage(${pageId})...`);
 
  
-
         await fetchData(pageId);
 
         wwLib.logStore.verbose('Page loaded');
@@ -36,7 +32,6 @@ export default {
     },
 
  
-
     /**
      * @PUBLIC_API
      * @DEPRECATED
@@ -93,7 +88,7 @@ async function fetchData(pageId) {
     try {
         const lang = window.location.pathname.startsWith(`/${wwLib.wwLang.lang}/`) ? wwLib.wwLang.lang : '';
         const base = wwLib.useBaseTag() ? wwLib.getBaseTag() : '/';
-        let url = `${base}public/data/${pageId.split('_')[0]}.json?wwlang=${lang}&_wwcv=${window.wwg_cacheVersion}`;
+        let url = `${base}data/${pageId.split('_')[0]}.json?wwlang=${lang}&_wwcv=${window.wwg_cacheVersion}`;
 
         const {
             data: {
@@ -116,7 +111,7 @@ async function fetchData(pageId) {
         }
 
         if (pageData.cmsDataSetPath) {
-            url = `${base}public/data/${pageId}.json?wwlang=${lang}&_wwcv=${window.wwg_cacheVersion}`;
+            url = `${base}data/${pageId}.json?wwlang=${lang}&_wwcv=${window.wwg_cacheVersion}`;
 
             const {
                 data: { page: pageIndexData },
@@ -133,7 +128,7 @@ async function fetchData(pageId) {
                 if (!wwLib.$store.getters['data/getCollections'][collection.id])
                     promises.push(
                         axios
-                            .get(`/public/collections/${collection.id}.json?_wwcv=${window.wwg_cacheVersion}`)
+                            .get(`/collections/${collection.id}.json?_wwcv=${window.wwg_cacheVersion}`)
                             .then(({ data }) => (collection.data = data))
                             .catch(err => wwLib.wwLog.error(err))
                     );
@@ -156,7 +151,6 @@ async function fetchData(pageId) {
     /* wwFront:end */
 
  
-
     // eslint-disable-next-line vue/custom-event-name-casing
     wwLib.$emit('wwStore:dataLoaded');
 }

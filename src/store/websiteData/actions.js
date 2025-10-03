@@ -1,10 +1,8 @@
  
-
 import { cloneDeep } from 'lodash';
 import { useVariablesStore } from '@/pinia/variables.js';
 
  
-
 export default {
     /*=============================================m_ÔÔ_m=============================================\
       DESIGN
@@ -14,14 +12,11 @@ export default {
         designInfo.plugins.forEach(plugin => context.commit('addPlugin', plugin));
     },
  
-
  
-
     /*=============================================m_ÔÔ_m=============================================\
       PAGE
     \================================================================================================*/
- 
-    /* wwFront:start */
+     /* wwFront:start */
     async setAllData(context, data) {
         const variablesStore = useVariablesStore(wwLib.$pinia);
         if (data.collections) context.dispatch('data/setNewCollections', data.collections, { root: true });
@@ -39,8 +34,7 @@ export default {
         variablesStore.cleanComponent(sectionIds);
     },
     /* wwFront:end */
- 
-    setPageId(context, pageId) {
+     setPageId(context, pageId) {
         context.commit('setPageId', pageId || context.getters['getDesignInfo'].homePageId);
     },
     setPageIdFromRoute(context, route) {
@@ -80,7 +74,6 @@ export default {
     },
 
  
-
     /*=============================================m_ÔÔ_m=============================================\
         PLUGINS
     \================================================================================================*/
@@ -110,7 +103,7 @@ export default {
     async updatePluginSettings({ commit, getters }, { pluginId, settings }) {
         if (!settings) return;
         const plugin = getters.getPluginById(pluginId);
-        if (plugin && !process.env.VUE_APP_IS_EDITOR_DEV)
+        if (plugin && !import.meta.env.VITE_APP_IS_EDITOR_DEV)
             await window.wwLib.wwPlugin.saveSettings(pluginId, settings.id, settings.publicData, settings.privateData);
         commit('updatePlugin', { pluginId, settings });
     },

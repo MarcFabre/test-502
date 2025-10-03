@@ -26,20 +26,17 @@ export default {
         const content = inject('componentContent');
         return {
             content,
- 
-            wwFrontState: inject('wwFrontState'),
+             wwFrontState: inject('wwFrontState'),
         };
     },
     computed: {
         canEditText() {
- 
-            /* wwFront:start */
+             /* wwFront:start */
             // eslint-disable-next-line no-unreachable
             return false;
             /* wwFront:end */
         },
- 
-        textStyle() {
+         textStyle() {
             return wwLib.wwUtils.getTextStyleFromContent(this.content);
         },
         internalText() {
@@ -66,8 +63,7 @@ export default {
             }
         },
     },
- 
-    methods: {
+     methods: {
         updateText(text) {
             /* wwFront:start */
             return;

@@ -1,5 +1,4 @@
  
-
 export default {
     setCollections({ commit }, collections) {
         for (const collection of collections) {
@@ -37,8 +36,7 @@ export default {
     setCollection({ commit }, collection) {
         commit('setCollection', collection);
     },
- 
-    setCollectionFetching({ commit }, { id, isFetching, isFetched }) {
+     setCollectionFetching({ commit }, { id, isFetching, isFetched }) {
         commit('setCollectionFetching', { id, isFetching, isFetched });
     },
     setPageParameterVariables({ commit, getters, rootGetters }) {
@@ -46,16 +44,14 @@ export default {
         const page = rootGetters['websiteData/getPage'];
         if (!page) return;
         let params = {};
- 
-        /* wwFront:start */
+         /* wwFront:start */
         params = wwLib.getFrontRouter().currentRoute._value.params;
         /* wwFront:end */
         const variables = getters['getPageParameterVariablesFromId'](page.id);
         for (const variable of variables) {
             commit('setPageParameterVariable', {
                 ...variable,
- 
-                /* wwFront:start */
+                 /* wwFront:start */
                 // eslint-disable-next-line no-dupe-keys
                 value: params[variable.id],
                 /* wwFront:end */
@@ -75,8 +71,7 @@ export default {
         if (!formula) return;
         commit('setFormula', formula);
     },
- 
-    setPluginFormula({ commit }, formula) {
+     setPluginFormula({ commit }, formula) {
         if (!formula) return;
         commit('setPluginFormula', formula);
     },
@@ -113,5 +108,4 @@ export default {
     resetWorkflowsResult({ commit }) {
         commit('resetWorkflowsResult');
     },
- 
-};
+ };

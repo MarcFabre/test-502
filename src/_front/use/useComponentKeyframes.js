@@ -17,7 +17,6 @@ export function useComponentKeyframes({ componentId, style, isEditing, isSelecte
         animationStyle: computed(() => {
             if (!style.animationDuration) return {};
  
-
             let animationPlayState = getRealValue(
                 style.animationPlayState === undefined ? true : style.animationPlayState,
                 'running',
@@ -25,7 +24,6 @@ export function useComponentKeyframes({ componentId, style, isEditing, isSelecte
             );
             let animationName = _animationName;
  
-
             return {
                 animationName,
                 animationPlayState,

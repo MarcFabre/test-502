@@ -51,8 +51,7 @@ export default {
                     };
                     wwLib.getFrontDocument().head.appendChild(styleToAdd);
 
- 
-                }
+                 }
             } catch (e) {
                 return reject(e);
             }
@@ -93,8 +92,7 @@ export default {
                     }
                     wwLib.getFrontDocument().head.appendChild(styleToAdd);
 
- 
-                }
+                 }
             } catch (e) {
                 return reject();
             }
@@ -106,7 +104,6 @@ export default {
      */
     goTo(route, query = {}, options = {}) {
  
-
         /* wwFront:start */
         //Add leading '/'
         if (route && typeof route === 'string' && !route.startsWith('/')) {

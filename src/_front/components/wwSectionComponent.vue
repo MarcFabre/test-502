@@ -8,8 +8,7 @@
         class="ww-section"
         :data-section-uid="uid"
         :class="[
- 
-            `ww-section-${uid}`,
+             `ww-section-${uid}`,
         ]"
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"
@@ -19,8 +18,7 @@
 
         <div :id="anchorId" class="hash-anchor"></div>
 
- 
-        <!-- wwFront:start -->
+         <!-- wwFront:start -->
         <component
             :is="vueComponentName"
             ref="component"
@@ -40,13 +38,11 @@
         />
         <!-- wwFront:end -->
 
- 
-    </div>
+     </div>
 </template>
 
 <script>
- 
-import { provide, ref, computed, toRef, reactive, inject, shallowRef, watch } from 'vue';
+ import { provide, ref, computed, toRef, reactive, inject, shallowRef, watch } from 'vue';
 
 import {
     getComponentIcon,
@@ -63,14 +59,12 @@ import { useComponentActions } from '@/_common/use/useActions';
 import { getBackgroundStyle } from '@/_front/helpers/wwBackgroungStyle';
 
  
-
 import { inheritFrom } from '@/_common/helpers/configuration/configuration';
 
 export default {
     name: 'wwSectionComponent',
     components: {
- 
-    },
+     },
     props: {
         uid: { type: String, required: true },
         index: { type: Number, required: true },
@@ -82,14 +76,12 @@ export default {
         provide('dragZoneId', props.uid);
 
  
-
         const { currentStates, addInternalState, removeInternalState, toggleInternalState } = useComponentStates(
             { uid: props.uid, type: 'section' },
             {
                 context: {},
                 propsState: toRef(props, 'states'),
- 
-            }
+             }
         );
 
         const wwIsInStretchedSection = computed(() => {
@@ -104,17 +96,14 @@ export default {
             state,
             configuration,
             name: sectionName,
- 
-        } = useComponentData({
+         } = useComponentData({
             type: 'section',
             uid: props.uid,
             currentStates,
- 
-        });
+         });
 
         const isRendering = computed(() => {
  
-
             /* wwFront:start */
             // eslint-disable-next-line no-unreachable
             return style.conditionalRendering;
@@ -141,12 +130,10 @@ export default {
         });
 
  
-
         useComponentAdvancedInteractions(state, wwLib.$store.getters['websiteData/getPageId']);
         useComponentActions({ uid: props.uid, type: 'section' }, { configuration, componentRef: component });
 
  
-
         return {
             rootElement,
             component,
@@ -219,8 +206,7 @@ export default {
 
                 return _style;
             }),
- 
-        };
+         };
     },
     computed: {
         elementStyle() {
@@ -296,8 +282,7 @@ export default {
 
             return attributes;
         },
- 
-    },
+     },
     methods: {
         onTriggerEvent({ name, event } = {}) {
             this.triggerEvent(name, event);
@@ -308,8 +293,7 @@ export default {
         onMouseLeave() {
             this.removeInternalState('_wwHover', true);
         },
- 
-    },
+     },
 };
 </script>
 
@@ -332,7 +316,5 @@ export default {
         left: 50%;
     }
 
- 
-}
- 
-</style>
+ }
+ </style>

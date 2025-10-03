@@ -19,14 +19,13 @@ function scrollBehavior(to) {
 }
 
  
-
 /* wwFront:start */
 import pluginsSettings from '../../plugins-settings.json';
 
 // eslint-disable-next-line no-undef
-window.wwg_designInfo = {"id":"dbdf6bd3-90fc-4421-9c6b-c1681585151b","homePageId":"ebb07c33-d44e-4277-8bcd-e6f6b05cb785","authPluginId":null,"baseTag":null,"defaultTheme":"light","langs":[{"lang":"en","default":true}],"background":{},"workflows":[],"pages":[{"id":"ebb07c33-d44e-4277-8bcd-e6f6b05cb785","linkId":"ebb07c33-d44e-4277-8bcd-e6f6b05cb785","name":"Home","folder":null,"paths":{"en":"home","default":"home"},"langs":["en"],"cmsDataSetPath":null,"sections":[{"uid":"482f30a2-363d-4d51-9ee0-f9ded04ac6c6","sectionTitle":"Header Section","linkId":"af0ed112-8b76-4c5c-9675-3a5377f26d43"},{"uid":"833dbbb1-ff3a-44ed-8a6a-5dcb70fc7d27","sectionTitle":"Main Container","linkId":"c7c991d6-1fc0-4ebb-9320-98ff741de921"}],"pageUserGroups":[],"title":{"en":"","fr":"Vide | Commencer à partir de zéro"},"meta":{"desc":{},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":""},{"id":"e82bf89e-8e1c-4066-bd42-313faf37609b","linkId":"e82bf89e-8e1c-4066-bd42-313faf37609b","name":"gpt-4.1","folder":null,"paths":{"en":"gpt-4-1","default":"gpt-4-1"},"langs":["en"],"cmsDataSetPath":null,"sections":[],"pageUserGroups":[],"title":{},"meta":{"desc":{},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":""}],"plugins":[{"id":"2bd1c688-31c5-443e-ae25-59aa5b6431fb","name":"REST API","namespace":"restApi"}]};
+window.wwg_designInfo = {"id":"e9674bdb-38d6-48b6-8079-605507059749","homePageId":"75bb0b61-c917-4b04-9fd0-c35dd764523f","authPluginId":"f5856798-485d-47be-b433-d43d771c64e1","baseTag":{},"defaultTheme":"light","langs":[{"lang":"en","default":true,"isDefaultPath":false}],"background":{},"workflows":[{"id":"c3e1b88e-979b-4724-a560-797bdbe6abdd","actions":{},"trigger":"onload-app"}],"pages":[{"id":"75bb0b61-c917-4b04-9fd0-c35dd764523f","linkId":"75bb0b61-c917-4b04-9fd0-c35dd764523f","name":"Home","folder":null,"paths":{"en":"home","default":"home"},"langs":["en"],"cmsDataSetPath":null,"sections":[{"uid":"9c50a178-e908-44ba-87a6-48d9015a64c7","sectionTitle":"Section","linkId":"7529dfe3-4531-4908-90c8-1ad7983e84ad"}],"pageUserGroups":[],"title":{},"meta":{"desc":{},"keywords":{},"__typename":"PageMeta","socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":""}],"plugins":[{"id":"f9ef41c3-1c53-4857-855b-f2f6a40b7186","name":"Supabase","namespace":"supabase"},{"id":"1fa0dd68-5069-436c-9a7d-3b54c340f1fa","name":"Supabase Auth","namespace":"supabaseAuth"},{"id":"29809245-a5ea-4687-af79-952998abab22","name":"Airtable","namespace":"airtable"},{"id":"1506e088-e31c-49bc-83a1-90a3de4f6db1","name":"SQL","namespace":"sql"},{"id":"9c40819b-4a8f-468f-9ba5-4b9699f3361f","name":"Charts","namespace":"chartjs"},{"id":"f5856798-485d-47be-b433-d43d771c64e1","name":"Xano Auth","namespace":"xanoAuth"},{"id":"832d6f7a-42c3-43f1-a3ce-9a678272f811","name":"Date","namespace":"dayjs"},{"id":"2bd1c688-31c5-443e-ae25-59aa5b6431fb","name":"REST API","namespace":"restApi"},{"id":"cd33cf33-e29f-4e8c-ac26-b997fe507ce7","name":"Xano","namespace":"xano"}]};
 // eslint-disable-next-line no-undef
-window.wwg_cacheVersion = 16;
+window.wwg_cacheVersion = 27;
 // eslint-disable-next-line no-undef
 window.wwg_pluginsSettings = pluginsSettings;
 // eslint-disable-next-line no-undef
@@ -155,8 +154,9 @@ let routerOptions = {};
 
 const isProd =
     !window.location.host.includes(
-        '-staging.' + (process.env.WW_ENV === 'staging' ? process.env.VUE_APP_PREVIEW_URL : '')
-    ) && !window.location.host.includes(process.env.VUE_APP_PREVIEW_URL);
+        // TODO: add staging2 ?
+        '-staging.' + (process.env.WW_ENV === 'staging' ? import.meta.env.VITE_APP_PREVIEW_URL : '')
+    ) && !window.location.host.includes(import.meta.env.VITE_APP_PREVIEW_URL);
 
 if (isProd && window.wwg_designInfo.baseTag?.href) {
     let baseTag = window.wwg_designInfo.baseTag.href;

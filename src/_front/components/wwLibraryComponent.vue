@@ -1,6 +1,5 @@
 <template>
- 
-    <!-- wwFront:start -->
+     <!-- wwFront:start -->
     <wwElementComponent
         v-if="!isLoop"
         :key="rootUid"
@@ -20,23 +19,23 @@
 <script>
 import { ref, inject, provide, computed, reactive, onBeforeUnmount } from 'vue';
 import { getComponentBaseUid } from '@/_common/helpers/component/component.js';
- 
-import wwElementComponent from '@/_front/components/wwElementComponent.vue';
+ import wwElementComponent from '@/_front/components/wwElementComponent.vue';
 import { useComponentData, useComponentTriggerEvent, useLibraryComponentWorkflow } from '@/_common/use/useComponent.js';
 import { useInner } from '@/_front/use/useInner.js';
 import { useComponentStates } from '@/_front/use/useComponentStates.js';
 import { useLibraryComponentActions } from '@/_common/use/useActions.js';
+import { usePopupStore } from '@/pinia/popup';
 
 let componentId = 1;
 
 export default {
     components: {
- 
-        wwElementComponent,
+         wwElementComponent,
     },
     inheritAttrs: false,
     props: {
         uid: { type: String, required: true },
+        isPopup: { type: Boolean, default: false },
     },
     setup(props) {
         const id = componentId;
@@ -50,8 +49,9 @@ export default {
 
         provide('wwLibraryComponentUid_', props.uid);
 
- 
+        const modalsStore = usePopupStore();
 
+ 
         const elementComponent = ref(null);
         const parentLibraryComponentContext = inject('_wwLibraryComponentContext', null);
         const dropzoneContext = inject('_wwDropzoneContext', null);
@@ -71,13 +71,11 @@ export default {
             currentStates,
             addInternalState,
             removeInternalState,
- 
-        } = useComponentStates(
+         } = useComponentStates(
             { uid: props.uid, type: 'element' },
             {
                 context,
- 
-            }
+             }
         );
 
         const {
@@ -88,18 +86,15 @@ export default {
             rawStyle,
             rawState,
             name: elementName,
- 
-        } = useComponentData({
+         } = useComponentData({
             type: 'libraryComponent',
             uid: props.uid,
             componentId: id,
             currentStates,
             context,
- 
-        });
+         });
 
  
-
         const { variables, updateVariable, formulas, componentVariablesConfiguration } = useInner(
             baseUid,
             {
@@ -114,8 +109,7 @@ export default {
                 baseUid,
                 variables,
                 workflowsResults: reactive({}),
- 
-                localComponentActionsFn: reactive({
+                 localComponentActionsFn: reactive({
                     elements: {},
                     libraryComponents: {},
                 }),
@@ -168,15 +162,13 @@ export default {
                     libraryComponentContext: parentLibraryComponentContext,
                     dropzoneContext,
                     localContext,
- 
-                },
+                 },
                 childrenData: computed(() => content?.childrenData || {}),
             },
         };
         provide('_wwLibraryComponentLayers', layers);
 
  
-
         useLibraryComponentActions(
             { uid: props.uid, componentId: id, repeatIndex: bindingContext?.index },
             { context, executionContext: libraryComponentContext }
@@ -187,6 +179,11 @@ export default {
         provide('_wwLibraryComponentContext', libraryComponentContext);
 
  
+        if (props.isPopup) {
+            onBeforeUnmount(() => {
+                triggerLibraryComponentEvent('_wwClosePopup');
+            });
+        }
 
         return {
             addInternalState,
@@ -199,11 +196,10 @@ export default {
                 style,
                 rawState,
                 rawStyle,
- 
-            }),
+             }),
+            modalsStore,
             elementComponent,
- 
-        };
+         };
     },
     computed: {
         base() {

@@ -1,19 +1,16 @@
 <template>
- 
-    <!-- wwFront:start -->
+     <!-- wwFront:start -->
     <wwSectionComponent :key="uid" :uid="uid" v-bind="$attrs"></wwSectionComponent>
     <!-- wwFront:end -->
 </template>
 
 <script>
- 
-import wwSectionComponent from '@/_front/components/wwSectionComponent.vue';
+ import wwSectionComponent from '@/_front/components/wwSectionComponent.vue';
 
 export default {
     name: 'wwSection',
     components: {
- 
-        wwSectionComponent,
+         wwSectionComponent,
     },
     inheritAttrs: false,
     props: {

@@ -6,7 +6,6 @@
 import { reactive, computed, provide, onMounted, watch } from 'vue';
 
  
-
 export default {
     setup() {
         const wwFrontState = reactive({
@@ -17,11 +16,9 @@ export default {
         });
         provide('wwFrontState', wwFrontState);
 
- 
-    },
+     },
 };
 </script>
 
 <style>
- 
-</style>
+ </style>

@@ -23,8 +23,7 @@
         <slot></slot
     ></component>
     <!-- wwFront:end -->
- 
-</template>
+ </template>
 
 <script>
 import { computed, ref, toRef, reactive, inject, provide, shallowRef, watch, onUnmounted } from 'vue';
@@ -39,7 +38,6 @@ import {
 } from '@/_common/helpers/component/component';
 
  
-
 import { useComponentData, useComponentTriggerEvent } from '@/_common/use/useComponent';
 import { useComponentStates } from '@/_front/use/useComponentStates';
 import { useComponentKeyframes } from '@/_front/use/useComponentKeyframes';
@@ -53,8 +51,7 @@ let componentId = 1;
 
 export default {
     components: {
- 
-    },
+     },
     inject: {
         parentId: { from: '_wwElementUid', default: null },
         wwIsInStretchedSection: { from: '__wwIsInStretchedSection', default: false },
@@ -69,8 +66,7 @@ export default {
         libraryComponentData: { type: Object, default: null },
         libraryComponentTriggerEvent: { type: Function, default: null },
         libraryComponentTriggerLibraryComponentEvent: { type: Function, default: null },
- 
-    },
+     },
     // update:child-selected and update:is-selected are used by useElementSelection
     emits: ['element-event', 'update:child-selected', 'update:is-selected', 'add-state', 'remove-state'],
     setup(props, vueContext) {
@@ -91,7 +87,6 @@ export default {
         provide('_wwElementComponentId', id);
 
  
-
         const libraryComponentContext = inject('_wwLibraryComponentContext', null);
         const dropzoneContext = inject('_wwDropzoneContext', null);
         const localContext = useElementLocalContext();
@@ -111,14 +106,12 @@ export default {
             addInternalState,
             removeInternalState,
             toggleInternalState,
- 
-        } = useComponentStates(
+         } = useComponentStates(
             { uid: props.uid, type: 'element' },
             {
                 context,
                 propsState: toRef(props, 'states'),
- 
-            }
+             }
         );
 
         provide('wwAddInternalState', addInternalState);
@@ -133,8 +126,7 @@ export default {
             rawStyle,
             name: elementName,
             configuration,
- 
-        } = useComponentData({
+         } = useComponentData({
             type: 'element',
             uid: props.uid,
             componentId: id,
@@ -142,10 +134,8 @@ export default {
             wwProps: toRef(props, 'wwProps'),
             context,
             libraryComponentDataRef: computed(() => props.libraryComponentData),
+         });
  
-        });
- 
-
         // TODO: could be one common reactive property
         // This is already the case for Section
         const wwFrontState = reactive({
@@ -171,7 +161,6 @@ export default {
 
         const isRendering = computed(() => {
  
-
             /* wwFront:start */
             // eslint-disable-next-line no-unreachable
             return style.conditionalRendering;
@@ -186,24 +175,20 @@ export default {
         });
 
  
-
         function triggerElementEvent(event) {
             vueContext.emit('element-event', event);
         }
         provide('triggerElementEvent', triggerElementEvent);
 
  
-
         useComponentAdvancedInteractions(state, wwLib.$store.getters['websiteData/getPageId']);
 
         const { animationStyle } = useComponentKeyframes({
             componentId: id,
             style,
- 
-        });
+         });
 
  
-
         useComponentActions(
             { uid: props.uid, componentId: id, type: 'element', repeatIndex: bindingContext?.index },
             { context, configuration, componentRef: component }
@@ -234,7 +219,7 @@ export default {
 
         const wwTechnicalAttributes = computed(() => {
             let attributes = {
-                'data-ww-element': true,
+                'data-ww-element': !props.noInteraction,
                 'data-ww-uid': props.uid,
                 'data-ww-component-id': id,
             };
@@ -244,15 +229,12 @@ export default {
             if (wwLibraryComponentUid_) attributes['data-ww-comp-uid'] = wwLibraryComponentUid_;
 
  
-
             return attributes;
         });
 
         // TODO if we are not recalculate this too often? even if it is static
         // The function is call in different places in the setup functions
         const config = getComponentConfiguration('element', props.uid);
-
- 
 
         return {
             component,
@@ -279,8 +261,7 @@ export default {
             animationStyle,
             wwLibraryComponentUid_,
             wwTechnicalAttributes,
- 
-        };
+         };
     },
     computed: {
         vueComponentName() {
@@ -325,7 +306,6 @@ export default {
             return attributes;
         },
  
-
         /*=============================================m_ÔÔ_m=============================================\
             STYLE
         \================================================================================================*/
@@ -428,10 +408,8 @@ export default {
 
             //CURSOR
             if (this.style.cursor) {
- 
-                    wwObjectStyle.cursor = this.style.cursor;
- 
-            }
+                     wwObjectStyle.cursor = this.style.cursor;
+             }
 
             //ANIMATION
             Object.assign(wwObjectStyle, this.animationStyle);
@@ -463,21 +441,17 @@ export default {
             return gridStyles;
         },
  
-
         /*=============================================m_ÔÔ_m=============================================\
             STYLE HELPERS
         \================================================================================================*/
- 
-    },
+     },
     methods: {
         onTriggerEvent({ name, event } = {}) {
             this.triggerEvent(name, event);
         },
- 
-    },
+     },
 };
 </script>
 
 <style scoped lang="scss">
- 
-</style>
+ </style>

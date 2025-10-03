@@ -9,19 +9,16 @@
         :class="textClass"
         :links="links"
     ></wwTextContent>
- 
-</template>
+ </template>
 
 <script>
 import { escape } from 'html-escaper';
 import wwTextContent from './wwTextContent.vue';
  
-
 export default {
     components: {
         wwTextContent,
- 
-    },
+     },
     inject: {
         componentStyle: { default: () => ({}) },
     },
@@ -52,14 +49,12 @@ export default {
             };
         },
         displayContent() {
- 
-            // eslint-disable-next-line no-unreachable
+             // eslint-disable-next-line no-unreachable
             return true;
         },
     },
     methods: {
- 
-    },
+     },
 };
 </script>
 

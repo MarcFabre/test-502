@@ -12,8 +12,7 @@ export function getBackgroundStyle(style) {
         ) {
             backgroundImage = wwLib.wwUtils.formatBgImgUrl(style.backgroundImage);
         } else {
- 
-            /* wwFront:start */
+             /* wwFront:start */
             backgroundImage = wwLib.wwUtils.formatBgImgUrl(style.backgroundImage);
             /* wwFront:end */
         }

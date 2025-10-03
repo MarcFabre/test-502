@@ -53,8 +53,7 @@ export function useLibraryComponentActions({ uid, componentId, repeatIndex }, { 
     }
 
     let hasActions;
- 
-    /* wwFront:start */
+     /* wwFront:start */
     const workflows = wwLib.$store.getters['libraries/getComponents'][baseUid]?.inner?.workflows || {};
     hasActions = {
         value: Object.values(workflows).some(workflow => workflow.isExternal),
@@ -66,7 +65,6 @@ export function useLibraryComponentActions({ uid, componentId, repeatIndex }, { 
     }
 
  
-
     onUnmounted(() => {
         clean();
     });

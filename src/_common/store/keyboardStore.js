@@ -8,8 +8,7 @@ export function createKeyboardEventStore() {
     });
 
     function handleKeyDown(event) {
- 
-        keyboardEventInfo.value.keydown = {
+         keyboardEventInfo.value.keydown = {
             key: event.key,
             keyCode: event.keyCode,
             shiftKey: event.shiftKey,
@@ -21,8 +20,7 @@ export function createKeyboardEventStore() {
     }
 
     function handleKeyUp(event) {
- 
-        keyboardEventInfo.value.keyup = {
+         keyboardEventInfo.value.keyup = {
             key: event.key,
             keyCode: event.keyCode,
             shiftKey: event.shiftKey,

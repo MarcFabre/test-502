@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { provide, inject, reactive, computed, toRef } from 'vue';
+import { provide, inject, reactive, computed, toRef, ref } from 'vue';
 
 export default {
     props: {
@@ -17,7 +17,6 @@ export default {
         const index = toRef(props, 'index');
 
  
-
         // Normally we are ok doing this here, as key for isRepeat and not repeat item or not the same
         if (props.isRepeat) {
             const parentBindingContext = inject('bindingContext', null);

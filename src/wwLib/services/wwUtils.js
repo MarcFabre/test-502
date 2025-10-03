@@ -7,7 +7,7 @@ export default {
      * @DEPRECATED wwLib.wwUtils.getUid
      */
     getUniqueId() {
-        wwLib.wwLog.warn('wwLib.wwUtils.getUniqueId is deprecated, use wwLib.wwLib.getUid instead');
+        wwLib.wwLog.warn('wwLib.wwUtils.getUniqueId is deprecated, use wwLib.wwUtils.getUid instead');
         var d = new Date();
         return Math.floor((d.getTime() * Math.random() + Math.random() * 10000 + Math.random() * 100) / 100);
     },
@@ -30,7 +30,7 @@ export default {
      * @PUBLIC_API
      */
     getCdnPrefix() {
-        return process.env.VUE_APP_CDN_URL;
+        return import.meta.env.VITE_APP_CDN_URL;
     },
 
     /**
@@ -116,7 +116,6 @@ export default {
         if (styleId) {
             styleId = styleId.split(',')[0];
  
-
             /* wwFront:start */
             // TODO: Might be better to get the value from wwLib.globalContext
             // eslint-disable-next-line no-unreachable
@@ -211,7 +210,6 @@ export default {
     },
 
  
-
     /**
      * @PUBLIC_API
      * @DEPRECATED wwLib.wwApp.scrollIntoView
@@ -261,7 +259,7 @@ export default {
     },
 
     getImgCdnUrl(url) {
-        if (url.includes(process.env.VUE_APP_CDN_URL)) {
+        if (url.includes(import.meta.env.VITE_APP_CDN_URL)) {
             return url;
         }
 
@@ -269,7 +267,7 @@ export default {
             return url;
         }
 
-        return process.env.VUE_APP_CDN_URL + url;
+        return import.meta.env.VITE_APP_CDN_URL + url;
     },
 
     getImgExtFromUrl(url) {

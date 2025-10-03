@@ -7,6 +7,7 @@ import { getValue } from '@/_common/helpers/code/customCode.js';
 import { executeWorkflow } from '@/_common/helpers/code/workflows.js';
 import { getComponentRawProperty } from '@/_common/helpers/component/componentProperty.js';
 import { lazySet } from '@/_common/helpers/reactivity.js';
+import { usePopupStore } from '@/pinia/popup';
 
 export function useComponentData({
     type,
@@ -16,8 +17,7 @@ export function useComponentData({
     context = {},
     libraryComponentDataRef,
     wwProps = {},
- 
-}) {
+ }) {
     let content = {};
     let rawContent = {};
     let sidepanelContent = reactive({
@@ -31,14 +31,19 @@ export function useComponentData({
     let rawState = {};
     let state = {};
 
- 
+    const popupsStore = usePopupStore();
 
+ 
     const configuration = getComponentConfiguration(type, uid);
-    const component = computed(() =>
-        type === 'section'
-            ? wwLib.$store.getters['websiteData/getSections'][uid]
-            : wwLib.$store.getters['websiteData/getWwObjects'][uid]
-    );
+    const component = computed(() => {
+        if (type === 'section') {
+            return wwLib.$store.getters['websiteData/getSections'][uid];
+        } else if (uid.startsWith('popup-')) {
+            return popupsStore.instances[uid];
+        } else {
+            return wwLib.$store.getters['websiteData/getWwObjects'][uid];
+        }
+    });
     const layers = inject('_wwLibraryComponentLayers', {});
 
     for (let propertyName in configuration.properties) {
@@ -48,14 +53,12 @@ export function useComponentData({
                 component,
                 currentStates,
                 libraryComponentDataRef,
- 
-                context,
+                 context,
                 content,
                 rawContent,
                 layers,
             });
- 
-        }
+         }
     }
 
     for (let propertyName in STYLE_CONFIGURATION) {
@@ -74,8 +77,7 @@ export function useComponentData({
                     propertyConfiguration: STYLE_CONFIGURATION[propertyName],
                     statesRef: currentStates,
                     libraryComponentDataRef,
- 
-                })
+                 })
             );
             const property = computed(() =>
                 getValue(rawProperty.value, context, {
@@ -87,12 +89,11 @@ export function useComponentData({
             // eslint-disable-next-line vue/no-ref-as-operand
             style[propertyName] = property;
             rawStyle[propertyName] = rawProperty;
- 
-        }
+         }
     }
     for (const propertyName in STATE_CONFIGURATION) {
         if (propertyName === 'interactions') {
-            const rawProperty = computed(() => component.value?._state.interactions);
+            const rawProperty = computed(() => component.value?._state?.interactions);
             // eslint-disable-next-line vue/no-ref-as-operand
             state.interactions = rawProperty;
             // eslint-disable-next-line vue/no-ref-as-operand
@@ -106,8 +107,7 @@ export function useComponentData({
                     propertyConfiguration: STATE_CONFIGURATION[propertyName],
                     statesRef: currentStates,
                     libraryComponentDataRef,
- 
-                })
+                 })
             );
             const property = computed(() =>
                 getValue(rawProperty.value, context, {
@@ -119,8 +119,7 @@ export function useComponentData({
             // eslint-disable-next-line vue/no-ref-as-operand
             state[propertyName] = property;
             rawState[propertyName] = rawProperty;
- 
-        }
+         }
     }
 
     if (type === 'libraryComponent') {
@@ -139,7 +138,6 @@ export function useComponentData({
     state = reactive(state);
 
  
-
     if (type === 'libraryComponent') {
         // TODO ?
     } else {
@@ -154,8 +152,7 @@ export function useComponentData({
 
     return {
         content,
- 
-        style,
+         style,
         state,
         rawContent,
         rawStyle,
@@ -197,10 +194,8 @@ export function useComponentTriggerEvent(
     const data = inject('componentData', ref({}));
 
  
-
     function triggerEvent(name, event = {}) {
- 
-        const workflows = (state.interactions || []).filter(({ trigger }) => trigger === name);
+         const workflows = (state.interactions || []).filter(({ trigger }) => trigger === name);
 
         // Launch all workflows in parallel
         workflows.forEach(workflow => {
@@ -210,8 +205,7 @@ export function useComponentTriggerEvent(
                 executionContext: {
                     type: LOG_TYPE[componentIdentifier.type],
                     uid: componentIdentifier.uid,
- 
-                },
+                 },
             });
         });
     }
@@ -249,7 +243,12 @@ export function useComponentTriggerEvent(
 
         for (const eventName of allEvents) {
             listeners[`on${eventName[0].toUpperCase()}${eventName.substr(1)}`] = event => {
-                if (eventName === 'contextmenu') event.preventDefault();
+                if (eventName === 'contextmenu') {
+                    // Allow native browser menu when Ctrl + Alt + Right Click (Windows/Linux) or Cmd + Option + Right Click (Mac)
+                    if (!((event.ctrlKey && event.altKey) || (event.metaKey && event.altKey))) {
+                        event.preventDefault();
+                    }
+                }
                 // Trigger define on the library component instance level
                 if (triggerParentEvent) {
                     triggerParentEvent(eventName, event);
@@ -339,8 +338,7 @@ export function useLibraryComponentWorkflow({ baseUid, componentIdentifier }, co
                 executionContext: {
                     type: LOG_TYPE[componentIdentifier.type],
                     uid: componentIdentifier.uid,
- 
-                },
+                 },
             });
         });
     }
@@ -357,14 +355,12 @@ export function useLibraryComponentWorkflow({ baseUid, componentIdentifier }, co
             executionContext: {
                 type: LOG_TYPE[componentIdentifier.type],
                 uid: componentIdentifier.uid,
- 
-            },
+             },
         });
     }
 
     let propertiesToWatch;
- 
-    /* wwFront:start */
+     /* wwFront:start */
     propertiesToWatch = [
         ...new Set(
             Object.values(wwLib.$store.getters['libraries/getComponents'][baseUid]?.inner?.workflows || {})
@@ -374,20 +370,16 @@ export function useLibraryComponentWorkflow({ baseUid, componentIdentifier }, co
     ];
     /* wwFront:end */
 
- 
-            for (const property of propertiesToWatch) {
- 
-                const unwatch = watch(
+             for (const property of propertiesToWatch) {
+                 const unwatch = watch(
                     () => context?.component?.props?.[property],
                     (newValue, oldValue) => {
                         triggerEvent('_wwOnPropertyChange', { newValue, oldValue }, property);
                     },
                     { immediate: true }
                 );
+             }
  
-            }
- 
-
     return { triggerLibraryComponentEvent: triggerEvent, executeLibraryComponentWorkflow };
 }
 
@@ -404,8 +396,7 @@ function setContentProperty(
         rawContent,
         boundProps,
         layers,
- 
-    }
+     }
 ) {
     const rawProperty = computed(() => {
         const value = getComponentRawProperty({
@@ -416,13 +407,11 @@ function setContentProperty(
             statesRef: currentStates,
             libraryComponentDataRef,
             layers,
- 
-        });
+         });
         return value;
     });
     const property = computed(() => {
- 
-        /* wwFront:start */
+         /* wwFront:start */
         return getValue(rawProperty.value, context, {
             defaultUndefined: propertyConfiguration.fallbackToDefault
                 ? propertyConfiguration.defaultValue
@@ -434,5 +423,4 @@ function setContentProperty(
     content[propertyName] = property;
     rawContent[propertyName] = rawProperty;
 
- 
-}
+ }

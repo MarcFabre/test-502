@@ -16,7 +16,6 @@ export default {
     },
     getPageCollectionIndex(state, getters, rootState, rootGetters) {
  
-
         /* wwFront:start */
         // eslint-disable-next-line no-unreachable
         const pageId = rootGetters['websiteData/getPageId'];
@@ -25,8 +24,7 @@ export default {
         /* wwFront:end */
     },
     getPageCollectionData(state, getters, rootState, rootGetters) {
- 
-        /* wwFront:start */
+         /* wwFront:start */
         // eslint-disable-next-line no-unreachable
         return rootGetters['websiteData/getPage'].data;
         /* wwFront:end */
@@ -79,8 +77,7 @@ export default {
                 return { ...obj, [id]: { ...item, id } };
             }, {});
     },
- 
-    getWorkflowResults: state => workflowId => state.workflowsResults[workflowId],
+     getWorkflowResults: state => workflowId => state.workflowsResults[workflowId],
     getGlobalWorkflows(state) {
         return state.globalWorkflows;
     },

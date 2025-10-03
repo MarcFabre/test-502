@@ -22,8 +22,7 @@ export function getComponentRawProperty({
     breakpoint, // use to ignore responsive inheritance. Usefull for classes data extraction on the sidepanel
     noClasses,
     layers,
- 
-}) {
+ }) {
     propertyConfiguration = propertyConfiguration || {};
     const useClasses = !noClasses && propertyConfiguration.classes;
     data = (dataRef ? dataRef.value : data) || {};
@@ -31,7 +30,6 @@ export function getComponentRawProperty({
     let result;
 
  
-
     let path = concatenatePath([prefix, suffix]);
     let rawPath = path;
     if (path.startsWith('_state.style')) {
@@ -182,15 +180,13 @@ export function getComponentPropertyClassInfo({
     statesRef,
     states, // use either statesRef or states, not both. We choose to have two different because unref is expensive on array
     breakpoint, // use to ignore responsive inheritance. Usefull for classes data extraction on the sidepanel
- 
-}) {
+ }) {
     propertyConfiguration = propertyConfiguration || {};
     const useClasses = propertyConfiguration.classes;
     data = (dataRef ? dataRef.value : data) || {};
     let classInformation = {};
 
  
-
     const defaultAppliedClassesIds = data?._state?.classes?.default || [];
     if (!propertyConfiguration.states && !propertyConfiguration.responsive) {
         const path = concatenatePath([prefix, prefix === '_state' ? '' : 'default', suffix]);
@@ -345,7 +341,6 @@ export function getComponentPropertyClassInfo({
 }
 
  
-
 function concatenatePath(pathes) {
     return pathes.filter(path => path && path.length).join('.');
 }
