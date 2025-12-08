@@ -1,6 +1,21 @@
-import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
+import { getCurrentSupabaseSettings, resolveRuntimeProjectUrl } from './helpers/environmentConfig';
+
+import {
+    buildQueryString,
+    buildHeaders,
+    executeRegularInvocation,
+    executeStreamingInvocation,
+} from './helpers/edgeFunction.js';
+
+const maskForLog = value => {
+    if (!value) return null;
+    const str = String(value);
+    if (str.length <= 8) return str;
+    return `${str.slice(0, 4)}...${str.slice(-4)}`;
+};
 
 export default {
     instance: null,
@@ -9,9 +24,103 @@ export default {
         Plugin API
     \================================================================================================*/
     async _onLoad(settings) {
-        await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        
+        // Get configuration for current environment
+        let config = getCurrentSupabaseSettings('supabase');
+        let runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+
+
+        await this.load(runtimeProjectUrl, config.publicApiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
+    
+    async fetchProjectInfo(configOverride = null) {
+        const config = configOverride || getCurrentSupabaseSettings('supabase');
+        const projectUrl = config?.projectUrl;
+        const accessToken = config?.accessToken;
+        if (!accessToken || !projectUrl) return;
+
+        const params = this.getBranchQueryParams(config);
+        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema', params });
+        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge', params });
+        this.projectInfo = schemaData?.data;
+        this.projectInfo.edge = edgeData?.data;
+        wwLib.$emit('wwTopBar:supabase:refresh');
+        return this.projectInfo;
+    },
+    getBranchQueryParams(config = getCurrentSupabaseSettings('supabase')) {
+        if (!config) return undefined;
+        const params = {};
+        if (config.branchSlug) params.branch = config.branchSlug;
+        if (config.baseProjectRef) params.baseProjectRef = config.baseProjectRef;
+        return Object.keys(params).length ? params : undefined;
+    },
+    async onSave(settings) {
+        await this.syncSettings(settings);
+        
+        // Get config for current environment
+        const config = getCurrentSupabaseSettings('supabase');
+        if (!config.projectUrl) return;
+        
+        const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+
+        if (config.accessToken && config.projectUrl) {
+            await this.install();
+            await this.fetchProjectInfo(config);
+        }
+
+        if (wwLib.wwPlugins.supabaseAuth) {
+            // supabaseAuth will call syncInstance
+            const authConfig = getCurrentSupabaseSettings('supabaseAuth');
+            const authRuntimeUrl = resolveRuntimeProjectUrl(authConfig);
+            await wwLib.wwPlugins.supabaseAuth.load(
+                authRuntimeUrl,
+                authConfig.publicApiKey,
+                authConfig.privateApiKey
+            );
+        } else {
+            await this.load(runtimeProjectUrl, config.publicApiKey);
+            this.subscribeTables(settings.publicData.realtimeTables || {});
+        }
+    },
+    async requestAPI({ method, path, data, params, signal }, retry = true) {
+        try {
+            // Get current environment and send it explicitly
+            const config = getCurrentSupabaseSettings('supabase');
+            const currentEnv = config.environment; // 'editor', 'staging', or 'production'
+
+            return await wwAxios({
+                method,
+                url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase${path}`,
+                data,
+                params: {
+                    ...params,
+                    wwEnv: currentEnv, // Send environment explicitly
+                },
+                signal, // Support AbortController signal
+            });
+        } catch (error) {
+            // Don't retry if request was aborted
+            if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+                throw error;
+            }
+
+            const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
+            if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
+                const { data } = await wwAxios.post(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/refresh`
+                );
+                return await this.requestAPI({ method, path, data, params, signal }, false);
+            }
+            wwLib.wwNotification.open({ text: 'Error while requesting the supabase project.', color: 'red' });
+            throw error;
+        }
+    },
+    /* wwEditor:end */
     /*  Called by supabase auth plugin
      *  Allow supabase to use the supabase auth instance when available
      */
@@ -27,6 +136,15 @@ export default {
     async _fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
+                // Ensure we have an instance for the current environment
+                if (!this.instance) {
+                    const config = getCurrentSupabaseSettings('supabase');
+                    const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+                    if (runtimeProjectUrl && config.publicApiKey) {
+                        await this.load(runtimeProjectUrl, config.publicApiKey);
+                    }
+                }
+                
                 const fields =
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
@@ -235,49 +353,51 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return this.formatReturn(data, count);
     },
-    async invokeEdgeFunction({ functionName, body, headers = [], queries = [], method = 'POST' }, wwUtils) {
-        wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
+    async invokeEdgeFunction(args, wwUtils) {
+        const {
+            functionName,
+            body,
+            headers = [],
+            queries = [],
+            method = 'POST',
+            useStreaming = false,
+            streamVariableId = null,
+        } = args;
+
+
+        wwUtils?.log('info', `[Supabase] ${useStreaming ? 'Streaming' : 'Invoking'} Edge function - ${functionName}`, {
             type: 'request',
             preview: { body, headers, method },
         });
-        const query = Array.isArray(queries)
-            ? queries
-            : queries && typeof queries === 'object'
-            ? Object.keys(queries).map(k => ({ key: k, value: queries[k] }))
-            : [];
-        const queryString = query.length
-            ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
-            : '';
-        const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
-            body: method === 'GET' ? undefined : body,
-            headers: Array.isArray(headers)
-                ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
-                : headers,
-            method,
-        });
+        const queryString = buildQueryString(queries);
+        const headerObject = buildHeaders(headers);
 
-        if (error instanceof FunctionsHttpError) {
-            throw new Error('Function returned an error with status code ' + error.context.status, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        } else if (error instanceof FunctionsRelayError) {
-            throw new Error('Relay error: ' + error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        } else if (error instanceof FunctionsFetchError) {
-            throw new Error('Fetch error: ' + error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        } else if (error) {
-            throw new Error(error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        }
-
-        try {
-            return JSON.parse(data);
-        } catch (error) {
-            return data;
+        if (useStreaming) {
+            return await executeStreamingInvocation(
+                {
+                    instance: this.instance,
+                    functionName,
+                    queryString,
+                    method,
+                    body,
+                    headerObject,
+                    streamVariableId,
+                    wwLib,
+                },
+                wwUtils
+            );
+        } else {
+            return await executeRegularInvocation(
+                {
+                    instance: this.instance,
+                    functionName,
+                    queryString,
+                    method,
+                    body,
+                    headerObject,
+                },
+                wwUtils
+            );
         }
     },
     async listFiles({ bucket, path, options = {} }, wwUtils) {

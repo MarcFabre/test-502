@@ -6,7 +6,7 @@ import fs from 'fs';
 import handlebars from 'handlebars';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
-const pages = {"index":{"outputDir":"./","lang":"en","cacheVersion":27,"meta":[{"name":"twitter:card","content":"summary"},{"property":"og:type","content":"website"},{"name":"robots","content":"index, follow"}],"scripts":{"head":"\n","body":"\n"},"baseTag":{"href":"/","target":"_self"},"alternateLinks":[{"rel":"alternate","hreflang":"x-default","href":"https://azsdef.test-weweb-preprod.click/"},{"rel":"alternate","hreflang":"en","href":"https://azsdef.test-weweb-preprod.click/"}]}};
+const pages = {"index":{"outputDir":"./","lang":"en","cacheVersion":28,"meta":[{"name":"twitter:card","content":"summary"},{"property":"og:type","content":"website"},{"name":"robots","content":"index, follow"}],"scripts":{"head":"\n","body":"\n"},"baseTag":{"href":"/","target":"_self"},"alternateLinks":[{"rel":"alternate","hreflang":"x-default","href":"https://azsdef.test-weweb-preprod.click/"},{"rel":"alternate","hreflang":"en","href":"https://azsdef.test-weweb-preprod.click/"}]}};
 
 // Read the main HTML template
 const template = fs.readFileSync(path.resolve(__dirname, 'template.html'), 'utf-8');

@@ -1,4 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
+import { getCurrentSupabaseSettings, resolveRuntimeProjectUrl } from './helpers/environmentConfig';
+
+const maskForLog = value => {
+    if (!value) return null;
+    const str = String(value);
+    if (str.length <= 8) return str;
+    return `${str.slice(0, 4)}...${str.slice(-4)}`;
+};
 
 export default {
     privateInstance: null,
@@ -7,8 +15,10 @@ export default {
         Plugin API
     \================================================================================================*/
     async _onLoad(settings) {
+        const config = getCurrentSupabaseSettings('supabaseAuth');
+        
         /* wwFront:start */
-        await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        await this.load(config.projectUrl, config.publicApiKey);
         /* wwFront:end */
     },
     async _initAuth() {
@@ -28,10 +38,14 @@ export default {
     \================================================================================================*/
     async load(projectUrl, publicApiKey, privateApiKey = null) {
         try {
-            if (!projectUrl || !publicApiKey) return;
+            const config = getCurrentSupabaseSettings('supabaseAuth');
+            const runtimeProjectUrl = resolveRuntimeProjectUrl(config) || projectUrl;
+            const effectivePublicKey = config?.publicApiKey || publicApiKey;
+            const effectivePrivateKey = config?.privateApiKey || privateApiKey;
+            if (!runtimeProjectUrl || !effectivePublicKey) return;
 
 
-            this.publicInstance = createClient(projectUrl, publicApiKey, {
+            this.publicInstance = createClient(runtimeProjectUrl, effectivePublicKey, {
                 auth: {
                     storageKey: wwLib.wwWebsiteData.getInfo().id,
                 },
@@ -316,11 +330,11 @@ export default {
         if (!this.publicInstance) throw new Error('Invalid Supabase Auth configuration.');
         const roles = this.settings.publicData.userRoleTable
             ? (
-                  await this.publicInstance
-                      .from(this.settings.publicData.userRoleTable)
-                      .select(`role:${this.settings.publicData.userRoleTableRoleColumn || 'roleId'}(*)`)
-                      .eq(this.settings.publicData.userRoleTableUserColumn || 'userId', userId)
-              ).data.map(({ role }) => role)
+                await this.publicInstance
+                    .from(this.settings.publicData.userRoleTable)
+                    .select(`role:${this.settings.publicData.userRoleTableRoleColumn || 'roleId'}(*)`)
+                    .eq(this.settings.publicData.userRoleTableUserColumn || 'userId', userId)
+            ).data.map(({ role }) => role)
             : [];
         return roles;
     },
@@ -403,7 +417,7 @@ const setCookies = session => {
         sameSite: 'Lax',
     });
     window.vm.config.globalProperties.$cookie.setCookie('sb-refresh-token', session.refresh_token, {
-        expire: session.expires_in,
+        expire: '1y',
         path,
         domain: window.location.hostname,
         secure: true,
@@ -434,11 +448,11 @@ const adminFunctions = {
         if (!this.privateInstance) throw new Error('Invalid Supabase Auth configuration.');
         const roles = this.settings.publicData.userRoleTable
             ? (
-                  await this.privateInstance
-                      .from(this.settings.publicData.userRoleTable)
-                      .select(`role:${this.settings.publicData.userRoleTableRoleColumn || 'roleId'}(*)`)
-                      .eq(this.settings.publicData.userRoleTableUserColumn || 'userId', userId)
-              ).data.map(({ role }) => role)
+                await this.privateInstance
+                    .from(this.settings.publicData.userRoleTable)
+                    .select(`role:${this.settings.publicData.userRoleTableRoleColumn || 'roleId'}(*)`)
+                    .eq(this.settings.publicData.userRoleTableUserColumn || 'userId', userId)
+            ).data.map(({ role }) => role)
             : [];
         return roles;
     },
